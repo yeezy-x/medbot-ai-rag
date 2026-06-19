@@ -6,10 +6,100 @@ datasource db {
   provider = "postgresql"
 }
 
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  bio       String?  @db.Text
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+
+  sessions     ChatSession[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model ChatSession {
+  id        String @id @default(uuid())
+
+  title     String
+
+  userId    String
+  user      User @relation(fields: [userId], references: [id])
+
+  messages  Message[]
+
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Message {
+  id        String @id @default(uuid())
+
+  role      MessageRole
+
+  content   String @db.Text
+
+  sessionId String
+  session   ChatSession @relation(fields: [sessionId], references: [id])
+
+  citations Citation[]
+
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+}
+
+model Citation {
+  id          String @id @default(uuid())
+
+  pageNumber  Int
+
+  chunkId     String
+
+  sourceTitle String
+
+  messageId   String
+  message     Message @relation(fields: [messageId], references: [id])
+
+  @@index([messageId])
+}
+
+model Document {
+  id         String @id @default(uuid())
+
+  title      String
+
+  version    String
+
+  source     String
+
+  uploadedAt DateTime @default(now())
+}
+
+model DocumentChunk {
+  id            String @id @default(uuid())
+
+  chunkId       String @unique
+
+  content       String @db.Text
+
+  embedding     Unsupported("vector")
+
+  pageNumber    Int
+
+  chapter       String?
+
+  section       String?
+
+  documentTitle String
+
+  createdAt     DateTime @default(now())
 }
