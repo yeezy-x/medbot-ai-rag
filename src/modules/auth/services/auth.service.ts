@@ -1,7 +1,4 @@
 import { BaseService } from "@/services/base.service";
-import {
-  RegisterInput,
-} from "../schemas/auth.schema";
 
 import { hashPassword }
 from "../utils/password";
@@ -9,7 +6,6 @@ from "../utils/password";
 import { UserRepository }
 from "@/repositories/user.repository";
 import { RegisterDto } from "../types/auth.dto";
-import { AuthError } from "@/lib/errors/auth-error";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.error";
 
 export class AuthService extends BaseService {
