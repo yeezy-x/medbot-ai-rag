@@ -1,12 +1,18 @@
-import { prisma } from "@/lib/prisma";
+import { BaseRepository } from "./base.repository";
 
-export class UserRepository {
+export class UserRepository extends BaseRepository{
   async findByEmail(email: string) {
-    return prisma.user.findUnique({
+    return this.db.user.findUnique({
       where: {
         email,
       },
     });
+  }
+
+  async findById(id:string){
+    return this.db.user.findUnique({
+      where:{id}
+    })
   }
 
   async create(data: {
@@ -14,8 +20,13 @@ export class UserRepository {
     email: string;
     passwordHash: string;
   }) {
-    return prisma.user.create({
+    return this.db.user.create({
       data,
     });
+  }
+
+  async exists(email:string){
+    const user=await this.findByEmail(email);
+    return !!user
   }
 }
