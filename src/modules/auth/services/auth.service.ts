@@ -10,6 +10,7 @@ import { UserRepository }
 from "@/repositories/user.repository";
 import { RegisterDto } from "../types/auth.dto";
 import { AuthError } from "@/lib/errors/auth-error";
+import { EmailAlreadyExistsError } from "../errors/email-already-exists.error";
 
 export class AuthService extends BaseService {
   private userRepository = new UserRepository();
@@ -22,9 +23,7 @@ export class AuthService extends BaseService {
         .exists(input.email)
 
     if (existingUser) {
-      throw new AuthError(
-        "Email already exists"
-      );
+      throw new EmailAlreadyExistsError()
     }
 
     const passwordHash =
