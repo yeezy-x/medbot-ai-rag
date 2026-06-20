@@ -1,28 +1,25 @@
-import {
-  RegisterInput,
-} from "../schemas/auth.schema";
+import { BaseService } from "@/services/base.service";
 
 import { hashPassword }
 from "../utils/password";
 
 import { UserRepository }
 from "@/repositories/user.repository";
+import { RegisterDto } from "../types/auth.dto";
+import { EmailAlreadyExistsError } from "../errors/email-already-exists.error";
 
-export class AuthService {
-  private userRepository =
-    new UserRepository();
+export class AuthService extends BaseService {
+  private userRepository = new UserRepository();
 
   async register(
-    input: RegisterInput
+    input: RegisterDto
   ) {
     const existingUser =
       await this.userRepository
-        .findByEmail(input.email);
+        .exists(input.email)
 
     if (existingUser) {
-      throw new Error(
-        "Email already exists"
-      );
+      throw new EmailAlreadyExistsError()
     }
 
     const passwordHash =
@@ -30,10 +27,16 @@ export class AuthService {
         input.password
       );
 
-    return this.userRepository.create({
-      name: input.name,
-      email: input.email,
-      passwordHash,
-    });
+    const user=await this.userRepository.create({
+      name:input.name,
+      email:input.email,
+      passwordHash
+    })
+
+    this.logger.info({
+      event:"USER_REGISTERED",
+      userId:user.id
+    })
+    return user
   }
 }

@@ -1,8 +1,10 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  DATABASE_URL: z.string(),
-  NODE_ENV: z.string(),
+  DATABASE_URL: z.string().min(1),
+  NODE_ENV: z.enum([
+    "developemt","production","test"
+  ])
 });
 
 export const env = envSchema.parse({

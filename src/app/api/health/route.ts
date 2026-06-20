@@ -1,10 +1,5 @@
-import { NextResponse } from "next/server";
+import { successResponse } from "@/lib/api-response";
 
-export async function GET() {
-  return NextResponse.json({
-    success: true,
-    data: {
-      status: "healthy",
-    },
-  });
+export async function GET(){
+  return successResponse({status:"healthy"},200)
 }

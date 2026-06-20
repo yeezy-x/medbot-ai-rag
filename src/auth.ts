@@ -13,18 +13,15 @@ export const {
   auth,
 } = NextAuth({
   adapter: PrismaAdapter(prisma),
-
   session: {
     strategy: "database",
   },
-
   providers: [
     Credentials({
       credentials: {
         email: {},
         password: {},
       },
-
       async authorize(credentials) {
         const email =
           credentials!.email as string;
