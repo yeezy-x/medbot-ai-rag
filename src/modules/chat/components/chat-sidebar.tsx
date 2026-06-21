@@ -4,6 +4,7 @@ import {
 
 import { auth }
 from "@/auth";
+import { Button } from "@/components/ui/button";
 
 export async function Sidebar() {
 
@@ -21,9 +22,9 @@ export async function Sidebar() {
   return (
     <aside>
 
-      <button>
+      <Button>
         New Chat
-      </button>
+      </Button>
 
       {chats.map(chat => (
         <div key={chat.id}>

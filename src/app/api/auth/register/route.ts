@@ -22,8 +22,7 @@ export async function POST(
 ) {
   return requestHandler(
     async () => {
-      const body =
-        await request.json();
+      const body = await request.json();
 
       const data =
         validate(

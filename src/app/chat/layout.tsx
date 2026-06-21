@@ -1,6 +1,6 @@
 import {
   Sidebar,
-} from "@/modules/chat/components/sidebar";
+} from "@/modules/chat/components/chat-sidebar";
 
 export default function ChatLayout({
   children,
