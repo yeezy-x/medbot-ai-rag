@@ -9,6 +9,7 @@ import {
 import {
   BaseService,
 } from "@/services/base.service";
+import { ForbiddenError } from "@/lib/errors/forbidden-error";
 
 export class ChatService
 extends BaseService {
@@ -52,10 +53,29 @@ extends BaseService {
     return chat;
   }
 
+  async getChatById(chatId:string, userId:string){
+    const chat=await this.chatRepository.findById(chatId);
+    if(!chat){
+      throw new NotFoundError("Chat not found.")
+    }
+    if(chat.userId!==userId){
+      throw new ForbiddenError()
+    }
+    return chat;
+  }
+
   async getUserChats(
     userId: string
   ) {
     return this.chatRepository
       .findByUserId(userId);
+  }
+
+  async deleteChat(chatId:string,userId:string){
+    const chat=await this.getChatById(chatId,userId);
+    await this.chatRepository.delete(chat.id);
+    return{
+      deleted:true
+    }
   }
 }

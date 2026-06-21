@@ -5,12 +5,7 @@ from "react-hook-form";
 
 import { zodResolver }
 from "@hookform/resolvers/zod";
-
-import {
-  registerFormSchema,
-  RegisterFormValues,
-} from "../schemas/register-form.schema";
-import { registerUser } from "../api/register";
+;
 import { useRouter } from "next/navigation";
 import { loginFormSchema, LoginFormValues } from "../schemas/login-form.schema";
 import { loginUser } from "../api/login";
