@@ -7,7 +7,7 @@ import {
 } from "@/lib/validate";
 
 import {
-  registerSchema,
+  loginSchema,
 } from "@/modules/auth/schemas/auth.schema";
 
 import {
@@ -26,17 +26,17 @@ export async function POST(
 
       const data =
         validate(
-          registerSchema,
+          loginSchema,
           body
         );
 
       const user =
-        await authService.register(
+        await authService.login(
           data
         );
 
       return {
-        id: user.id,
+        id:user.id
       };
     }
   );
