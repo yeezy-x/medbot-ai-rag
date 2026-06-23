@@ -1,16 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 
-export {
-  auth as middleware,
-} from "@/auth";
+export const proxy = auth((req) => {
+  if (!req.auth) {
+    return Response.redirect(new URL("/login", req.url));
+  }
+});
 
-
-export function proxy(request:NextRequest){
-  return NextResponse.redirect(new URL('/home',request.url))
-}
 export const config = {
-  matcher: [
-    "/chat/:path*",
-    "/dashboard/:path*",
-  ]
+  matcher: ["/chat/:path*", "/dashboard/:path*"],
 };
