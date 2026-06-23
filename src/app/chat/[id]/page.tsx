@@ -1,9 +1,9 @@
 // src/app/chat/[id]/page.tsx
-import { auth } from "@/auth";
 import { ChatService, MessageService } from "@/modules/chat/services";
 import { MessageList } from "@/modules/chat/components/message-list";
 import { notFound } from "next/navigation";
 import { ChatInputWrapper } from "@/components/chat-input-wrapper";
+import { requireUser } from "@/lib/auth-utils";
 
 interface ChatDetailPageProps {
   params: Promise<{ id: string }>;
@@ -11,14 +11,14 @@ interface ChatDetailPageProps {
 
 export default async function ChatDetailPage({ params }: ChatDetailPageProps) {
   const { id } = await params;
-  const session = await auth();
+  const user=await requireUser()
 
   const chatService = new ChatService();
   const messageService = new MessageService();
 
   let chat;
   try {
-    chat = await chatService.getChatById(id, session!.user.id);
+    chat = await chatService.getChatById(id, user.id);
   } catch {
     notFound();
   }

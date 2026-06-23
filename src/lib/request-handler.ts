@@ -4,7 +4,7 @@ from "next/server";
 import { handleError }
 from "./error-handler";
 
-export async function requestHandler(
+export async function requesteHandler(
   callback: () => Promise<unknown>
 ) {
   try {

@@ -1,9 +1,9 @@
 // src/app/api/chats/[id]/messages/route.ts
-import { auth } from "@/auth";
 import { requestHandler } from "@/lib/request-handler";
 import { validate } from "@/lib/validate";
 import { ChatService, MessageService } from "@/modules/chat/services";
 import { askQuestionSchema } from "@/modules/chat/schemas/ask-question.schema";
+import { requireUser } from "@/lib/auth-utils";
 
 const chatService = new ChatService();
 const messageService = new MessageService();
@@ -15,11 +15,11 @@ export async function POST(
   }
 ) {
   return requestHandler(async () => {
-    const session = await auth();
+    const user=await requireUser()
     const { id: sessionId } = await context.params;
 
     // Verify the chat exists and belongs to this user
-    await chatService.getChatById(sessionId, session!.user.id);
+    await chatService.getChatById(sessionId, user.id);
 
     const body = await request.json();
     const data = validate(askQuestionSchema, { ...body, sessionId });
@@ -51,11 +51,11 @@ export async function GET(
   }
 ) {
   return requestHandler(async () => {
-    const session = await auth();
+    const user=await requireUser()
     const { id: sessionId } = await context.params;
 
     // Verify ownership
-    await chatService.getChatById(sessionId, session!.user.id);
+    await chatService.getChatById(sessionId, user.id);
 
     const messages = await messageService.getConversation(sessionId);
     return messages;

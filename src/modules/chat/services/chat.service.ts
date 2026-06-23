@@ -54,7 +54,7 @@ extends BaseService {
   }
 
   async getChatById(chatId:string, userId:string){
-    const chat=await this.chatRepository.findById(chatId);
+    const chat=await this.chatRepository.findByIdAndUserId(chatId,userId);
     if(!chat){
       throw new NotFoundError("Chat not found.")
     }

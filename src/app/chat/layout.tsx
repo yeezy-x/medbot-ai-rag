@@ -1,24 +1,17 @@
-// src/app/chat/layout.tsx
 import { auth } from "@/auth";
-import { ChatService } from "@/modules/chat/services";
-import { Sidebar } from "@/modules/chat/components/chat-sidebar";
-
-const chatService = new ChatService();
+import { redirect } from "next/navigation";
 
 export default async function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
-  const chats = await chatService.getUserChats(session!.user.id);
+  const session =
+    await auth();
 
-  return (
-    <div className="flex h-[calc(100vh-57px)]">
-      <Sidebar initialChats={chats} />
-      <main className="flex-1 flex flex-col overflow-hidden">
-        {children}
-      </main>
-    </div>
-  );
+  if (!session?.user) {
+    redirect("/login");
+  }
+
+  return children;
 }
