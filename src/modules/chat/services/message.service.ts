@@ -1,25 +1,12 @@
-import {
-  MessageRole,
-} from "@prisma/client";
+// src/modules/chat/services/message.service.ts
+import { MessageRole } from "@/generated/enums";
+import { MessageRepository } from "@/repositories";
+import { BaseService } from "@/services/base.service";
 
-import {
-  MessageRepository,
-} from "@/repositories";
+export class MessageService extends BaseService {
+  private messageRepository = new MessageRepository();
 
-import {
-  BaseService,
-} from "@/services/base.service";
-
-export class MessageService
-extends BaseService {
-
-  private messageRepository =
-    new MessageRepository();
-
-  async createUserMessage(
-    sessionId: string,
-    content: string
-  ) {
+  async createUserMessage(sessionId: string, content: string) {
     return this.messageRepository.create({
       role: MessageRole.USER,
       content,
@@ -27,22 +14,15 @@ extends BaseService {
     });
   }
 
-  async createAssistantMessage(
-    sessionId: string,
-    content: string
-  ) {
+  async createAssistantMessage(sessionId: string, content: string) {
     return this.messageRepository.create({
-      role:
-        MessageRole.ASSISTANT,
+      role: MessageRole.ASSISTANT,
       content,
       sessionId,
     });
   }
 
-  async getConversation(
-    sessionId: string
-  ) {
-    return this.messageRepository
-      .findBySessionId(sessionId);
+  async getConversation(sessionId: string) {
+    return this.messageRepository.findBySessionId(sessionId);
   }
 }

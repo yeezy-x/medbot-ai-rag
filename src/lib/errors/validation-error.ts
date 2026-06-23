@@ -5,7 +5,7 @@ export class ValidationError extends AppError{
     constructor(message:string,details?:unknown){
         super(
             ErrorCode.VALIDATION_ERROR,
-            401,
+            400,
             message,
             details
         )

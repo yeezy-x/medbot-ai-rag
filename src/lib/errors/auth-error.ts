@@ -5,7 +5,7 @@ export class AuthError extends AppError{
     constructor(message="Unauthorized"){
         super(
             ErrorCode.AUTH_ERROR,
-            400,
+            401,
             message
         )
     }

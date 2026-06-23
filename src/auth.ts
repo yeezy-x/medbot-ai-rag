@@ -1,8 +1,9 @@
+// src/auth.ts
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcrypt";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
+import { comparePassword } from "@/modules/auth/utils/password";
 
 export const {
   handlers,
@@ -10,57 +11,52 @@ export const {
   signOut,
   auth,
 } = NextAuth({
-  adapter: PrismaAdapter({prisma}),
+  adapter: PrismaAdapter(prisma as never),
   session: {
     strategy: "jwt",
   },
+  pages: {
+    signIn: "/login",
+  },
   callbacks: {
-  async jwt({
-    token,
-    user,
-  }) {
-
-    if (user) {
-      token.id = user.id;
-    }
-
-    return token;
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+        token.email = user.email;
+        token.name = user.name;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.name = token.name as string;
+      }
+      return session;
+    },
   },
-
-  async session({
-    session,
-    token,
-  }) {
-
-    if (session.user) {
-      session.user.id =
-        token.id as string;
-    }
-
-    return session;
-  },
-},
   providers: [
     Credentials({
       credentials: {
-        email: {},
-        password: {},
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        const email = credentials?.email as string;
-        const password = credentials?.password as string;
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const email = credentials.email as string;
+        const password = credentials.password as string;
 
         const user = await prisma.user.findUnique({
-          where: { email },
+          where: { email: email.toLowerCase() },
         });
 
         if (!user) return null;
 
-        const isValid = await bcrypt.compare(
-          password,
-          user.passwordHash
-        );
-
+        const isValid = await comparePassword(password, user.passwordHash);
         if (!isValid) return null;
 
         return {
@@ -71,8 +67,4 @@ export const {
       },
     }),
   ],
-  pages: {
-    signIn: "/login",
-    
-  },
 });
