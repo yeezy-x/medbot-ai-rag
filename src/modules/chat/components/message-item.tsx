@@ -1,5 +1,10 @@
+type MessageRole =
+  | "USER"
+  | "ASSISTANT"
+  | "SYSTEM";
+  
 interface Props {
-  role: string;
+  role: MessageRole;
   content: string;
 }
 

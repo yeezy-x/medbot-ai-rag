@@ -12,7 +12,7 @@ export function useAutoScroll(
     useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    ref.current?.scrollIntoView({
+    ref.current?.scrollIntoView({a
       behavior: "smooth",
     });
   }, [dependency]);

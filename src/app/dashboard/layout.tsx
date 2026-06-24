@@ -1,13 +1,12 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
-export default async function ChatLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session =
-    await auth();
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/login");

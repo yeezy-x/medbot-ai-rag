@@ -1,9 +1,9 @@
 "use client";
 
-export default function ErrorPage() {
+export default function Error() {
   return (
     <div>
-      Something went wrong.
+      Failed to load chat.
     </div>
   );
 }

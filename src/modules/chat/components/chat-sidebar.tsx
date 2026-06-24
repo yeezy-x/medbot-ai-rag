@@ -1,37 +1,55 @@
-import {
-  ChatService,
-} from "@/modules/chat/services";
+// src/modules/chat/components/chat-sidebar.tsx
+"use client";
 
-import { auth }
-from "@/auth";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ChatList } from "./chat-list";
+import { createChat } from "@/modules/chat/api/chat.api";
 
-export async function Sidebar() {
+interface Chat {
+  id: string;
+  title: string;
+}
 
-  const session =
-    await auth();
+interface SidebarProps {
+  initialChats: Chat[];
+}
 
-  const chatService =
-    new ChatService();
+export function Sidebar({ initialChats }: SidebarProps) {
+  const router = useRouter();
+  const [chats, setChats] = useState<Chat[]>(initialChats);
+  const [isCreating, setIsCreating] = useState(false);
 
-  const chats =
-    await chatService.getUserChats(
-      session!.user.id
-    );
+  async function handleNewChat() {
+    setIsCreating(true);
+    try {
+      const result = await createChat("New Conversation");
+      const newChat = result.data;
+      setChats((prev) => [newChat, ...prev]);
+      router.push(`/chat/${newChat.id}`);
+    } catch (error) {
+      console.error("Failed to create chat:", error);
+    } finally {
+      setIsCreating(false);
+    }
+  }
 
   return (
-    <aside>
+    <aside className="w-64 flex flex-col border-r h-full">
+      <div className="p-3 border-b">
+        <Button
+          className="w-full"
+          onClick={handleNewChat}
+          disabled={isCreating}
+        >
+          {isCreating ? "Creating…" : "+ New Chat"}
+        </Button>
+      </div>
 
-      <Button>
-        New Chat
-      </Button>
-
-      {chats.map(chat => (
-        <div key={chat.id}>
-          {chat.title}
-        </div>
-      ))}
-
+      <div className="flex-1 overflow-y-auto p-2">
+        <ChatList chats={chats} />
+      </div>
     </aside>
   );
 }

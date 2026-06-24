@@ -8,12 +8,14 @@ export async function apiClient<T>(
       init
     );
 
-  const data =
-    await response.json();
+  let data;
 
-  if (!response.ok) {
+  try {
+    data =
+      await response.json();
+  } catch {
     throw new Error(
-      data.error?.message
+      "Invalid response"
     );
   }
 
