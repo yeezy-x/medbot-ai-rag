@@ -12,10 +12,22 @@ interface ChatInputWrapperProps {
 export function ChatInputWrapper({ sessionId }: ChatInputWrapperProps) {
   const router = useRouter();
 
-  async function handleSend(message: string) {
-    await sendMessage(sessionId, message);
-    router.refresh(); // Re-fetch messages from server
+  async function handleSend(
+  message: string
+) {
+  try {
+    await sendMessage(
+      sessionId,
+      message
+    );
+
+    router.refresh();
+  } catch {
+    alert(
+      "Failed to send message."
+    );
   }
+}
 
   return <MessageInput onSend={handleSend} />;
 }

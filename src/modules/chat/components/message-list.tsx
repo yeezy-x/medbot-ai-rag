@@ -7,7 +7,7 @@ export function MessageList({
   messages: Message[];
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-8">
       {messages.map(
         message => (
           <MessageItem
