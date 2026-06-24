@@ -1,21 +1,12 @@
-import {
-  requestHandler,
-} from "@/lib/request-handler";
-
-import {
-  validate,
-} from "@/lib/validate";
-
-import {
-  registerSchema,
-} from "@/modules/auth/schemas/auth.schema";
+import {requestHandler} from "@/lib/request-handler";
+import {validate} from "@/lib/validate";
+import {registerSchema} from "@/modules/auth/schemas/auth.schema";
 
 import {
   AuthService,
 } from "@/modules/auth/services/auth.service";
 
-const authService =
-  new AuthService();
+const authService = new AuthService();
 
 export async function POST(
   request: Request

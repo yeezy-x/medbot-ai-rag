@@ -14,6 +14,11 @@ interface Chat {
 
 interface SidebarProps {
   initialChats: Chat[];
+  user:{
+    id:string,
+    name?:string | null;
+    email?: string |null
+  }
 }
 
 export function Sidebar({ initialChats }: SidebarProps) {
@@ -28,28 +33,57 @@ export function Sidebar({ initialChats }: SidebarProps) {
       const newChat = result.data;
       setChats((prev) => [newChat, ...prev]);
       router.push(`/chat/${newChat.id}`);
-    } catch (error) {
-      console.error("Failed to create chat:", error);
+      router.refresh()
+    } catch {
+      alert("Failed to create chat.")
     } finally {
       setIsCreating(false);
     }
   }
 
   return (
-    <aside className="w-64 flex flex-col border-r h-full">
-      <div className="p-3 border-b">
-        <Button
-          className="w-full"
-          onClick={handleNewChat}
-          disabled={isCreating}
-        >
-          {isCreating ? "Creating…" : "+ New Chat"}
-        </Button>
-      </div>
+  <aside className="w-72 border-r flex flex-col bg-background">
+    
+    {/* Logo */}
+    <div className="p-4 border-b">
+      <h1 className="font-bold text-xl">
+        MedBot
+      </h1>
 
-      <div className="flex-1 overflow-y-auto p-2">
-        <ChatList chats={chats} />
-      </div>
-    </aside>
-  );
+      <p className="text-xs text-muted-foreground">
+        Gale Encyclopedia of Medicine
+      </p>
+    </div>
+
+    {/* New Chat */}
+    <div className="p-4 border-b">
+      <Button
+        className="w-full"
+        onClick={handleNewChat}
+        disabled={isCreating}
+      >
+        {isCreating
+          ? "Creating..."
+          : "+ New Chat"}
+      </Button>
+    </div>
+
+    {/* Recent Chats */}
+    <div className="px-4 py-3">
+      <h2 className="text-xs uppercase tracking-wide text-muted-foreground">
+        Recent Chats
+      </h2>
+    </div>
+
+    <div className="flex-1 overflow-y-auto px-2">
+      <ChatList chats={chats} />
+    </div>
+
+    {/* Footer */}
+    <div className="border-t p-4">
+      User Footer Here
+    </div>
+
+  </aside>
+);
 }

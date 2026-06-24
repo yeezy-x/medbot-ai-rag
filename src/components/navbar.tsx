@@ -7,12 +7,22 @@ export async function Navbar() {
 
   return (
     <nav className="border-b px-4 py-3 flex items-center justify-between">
+      {session?.user ? (
       <Link
+        href="/dashboard"
+        className="font-semibold text-lg"
+      >
+        MedBot
+      </Link>
+      ):(
+        <Link
         href="/"
         className="font-semibold text-lg"
       >
         MedBot
       </Link>
+      )
+    }
 
       <div className="flex items-center gap-4">
         {session?.user ? (
@@ -43,3 +53,4 @@ export async function Navbar() {
     </nav>
   );
 }
+

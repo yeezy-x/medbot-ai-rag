@@ -1,15 +1,7 @@
-import { auth } from "@/auth";
-import {
-  RegisterForm,
-} from "@/modules/auth/components/register-form";
-import { redirect } from "next/navigation";
+// src/app/(auth)/register/page.tsx
 
-export default async function RegisterPage() {
-    const session=await auth()
-        if(session){
-            redirect("/dashboard")
-        }
-  return (
-    <RegisterForm />
-  );
+import { RegisterCard } from "@/modules/auth/components/register-card";
+
+export default function RegisterPage() {
+  return <RegisterCard />;
 }

@@ -1,6 +1,8 @@
+// src/app/(app)/dashboard/loading.tsx
+
 export default function Loading() {
   return (
-    <div>
+    <div className="p-8">
       Loading dashboard...
     </div>
   );

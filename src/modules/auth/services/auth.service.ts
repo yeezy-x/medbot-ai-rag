@@ -1,10 +1,6 @@
 import { BaseService } from "@/services/base.service";
-
-import { comparePassword, hashPassword }
-from "../utils/password";
-
-import { UserRepository }
-from "@/repositories/user.repository";
+import { comparePassword, hashPassword } from "../utils/password";
+import { UserRepository } from "@/repositories/user.repository";
 import { LoginDto, RegisterDto } from "../types/auth.dto";
 import { EmailAlreadyExistsError } from "../errors/email-already-exists.error";
 import { ValidationError } from "@/lib/errors/validation-error";
@@ -15,30 +11,21 @@ export class AuthService extends BaseService {
   async register(
     input: RegisterDto
   ) {
-    const existingUser =
-      await this.userRepository
+    const existingUser = await this.userRepository
         .exists(input.email)
 
     if (existingUser) {
       throw new EmailAlreadyExistsError()
     }
 
-    const passwordHash =
-      await hashPassword(
-        input.password
-      );
-
+    const passwordHash=await hashPassword(input.password);
     const user=await this.userRepository.create({
       name:input.name,
       email:input.email,
       passwordHash
     })
-
-    this.logger.info({
-      event:"USER_REGISTERED",
-      userId:user.id
-    })
-    return user
+    this.logger.info({event:"USER_REGISTERED",userId:user.id})
+    return user;
   }
 
   async login(input:LoginDto){
@@ -55,5 +42,9 @@ export class AuthService extends BaseService {
       userId:user.id
     })
     return user
+  }
+
+  async logout(){
+
   }
 }

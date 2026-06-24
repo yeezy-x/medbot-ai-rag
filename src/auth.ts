@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
-import { comparePassword } from "@/modules/auth/utils/password";
+import { AuthService } from "./modules/auth/services/auth.service";
 
 export const {
   handlers,
@@ -14,6 +14,7 @@ export const {
   adapter: PrismaAdapter(prisma as never),
   session: {
     strategy: "jwt",
+    maxAge:24*24*60
   },
   pages: {
     signIn: "/login",
@@ -50,14 +51,8 @@ export const {
         const email = credentials.email as string;
         const password = credentials.password as string;
 
-        const user = await prisma.user.findUnique({
-          where: { email: email.toLowerCase() },
-        });
-
-        if (!user) return null;
-
-        const isValid = await comparePassword(password, user.passwordHash);
-        if (!isValid) return null;
+        const authService = new AuthService();
+        const user = await authService.login({ email, password });
 
         return {
           id: user.id,
