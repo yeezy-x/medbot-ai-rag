@@ -67,6 +67,11 @@ export type Citation = Prisma.CitationModel
  */
 export type Document = Prisma.DocumentModel
 /**
+ * Model Chunk
+ * 
+ */
+export type Chunk = Prisma.ChunkModel
+/**
  * Model Account
  * 
  */
