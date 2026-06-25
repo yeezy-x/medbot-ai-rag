@@ -13,7 +13,7 @@ export async function GET() {
         timestamp: new Date().toISOString(),
       },
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         success: false,

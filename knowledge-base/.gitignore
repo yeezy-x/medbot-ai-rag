@@ -1,0 +1,5 @@
+# Knowledge assets
+knowledge-base/*.pdf
+knowledge-base/*.epub
+knowledge-base/*.docx
+knowledge-base/*.zip

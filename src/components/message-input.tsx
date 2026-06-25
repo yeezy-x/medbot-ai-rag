@@ -34,23 +34,50 @@ export function MessageInput({ onSend }: Props) {
   }
 
   return (
-    <div className="border-t p-4 flex gap-3 items-end">
+  <div className="border-t bg-background p-4">
+    <div
+      className="
+      mx-auto
+      flex
+      max-w-4xl
+      items-end
+      gap-3
+      rounded-2xl
+      border
+      p-3
+      shadow-sm
+      "
+    >
       <Textarea
         value={message}
-        onChange={(e) => setMessage(e.target.value)}
+        onChange={(e) =>
+          setMessage(e.target.value)
+        }
         onKeyDown={handleKeyDown}
-        placeholder="Ask a medical question… (Enter to send, Shift+Enter for new line)"
+        placeholder="Ask a medical question..."
         disabled={isSending}
-        className="min-h-13 max-h-40 resize-none flex-1"
+        className="
+          border-0
+          shadow-none
+          resize-none
+          focus-visible:ring-0
+          min-h-12
+          max-h-40
+        "
         rows={1}
       />
+
       <Button
         onClick={submit}
-        disabled={!message.trim() || isSending}
-        className="shrink-0"
+        disabled={
+          !message.trim() ||
+          isSending
+        }
+        size="icon"
       >
-        {isSending ? "Sending…" : "Send"}
+        ↑
       </Button>
     </div>
-  );
+  </div>
+);
 }

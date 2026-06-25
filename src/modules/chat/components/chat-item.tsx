@@ -18,12 +18,16 @@ export function ChatItem({ id, title }: ChatItemProps) {
     <Link
       href={`/chat/${id}`}
       className={cn(
-        "block truncate rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted",
-        isActive && "bg-muted font-medium"
+        "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted transition",
+        isActive &&
+          "bg-muted font-medium"
       )}
-      title={title}
     >
-      {title}
+      <span>💬</span>
+
+      <span className="truncate">
+        {title}
+      </span>
     </Link>
   );
 }
