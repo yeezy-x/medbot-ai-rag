@@ -6,3 +6,4 @@ export interface Chunk {
   startOffset:number,
   endOffset:number
 }
+

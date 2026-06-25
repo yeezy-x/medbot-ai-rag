@@ -6,7 +6,7 @@ import { RecursiveChunkingStrategy } from "../strategies/recursive.strategy";
 
 export class ChunkingService {
   constructor(
-    private readonly strategy: ChunkingStrategy =
+    public readonly strategy: ChunkingStrategy =
       new RecursiveChunkingStrategy()
   ) {}
 
