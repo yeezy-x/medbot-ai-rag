@@ -1,12 +1,17 @@
 import path from "path";
+
 import { PdfService } from "../services/pdf.service";
-import { ChunkingService } from "../services/chunking.serivce";
 import { NormalizationService } from "../services/normalization.service";
+import { ChunkingService } from "../services/chunking.serivce";
 
 async function main() {
+  console.log("\n====================================");
+  console.log("📚 MedBot Knowledge Ingestion");
+  console.log("====================================\n");
+
   const pdfService = new PdfService();
-  const chunkingService=new ChunkingService()
-  const normalizationService=new NormalizationService()
+  const normalizationService = new NormalizationService();
+  const chunkingService = new ChunkingService();
 
   const pdfPath = path.resolve(
     process.cwd(),
@@ -14,13 +19,57 @@ async function main() {
     "gale-encyclopedia.pdf"
   );
 
-  const text = await pdfService.extractText(pdfPath);
-  const normalizedText=normalizationService.normalize(text)
-  const chunks=chunkingService.createChunks(normalizedText )
-  console.log("Total Chunks:",chunks.length);
+  console.time("📄 PDF Extraction");
+
+  const rawText =
+    await pdfService.extractText(pdfPath);
+
+  console.timeEnd("📄 PDF Extraction");
+
+  console.time("🧹 Text Normalization");
+
+  const normalizationResult = normalizationService.normalize(rawText);
+  const normalizedText = normalizationResult.text;
+
+  console.timeEnd("🧹 Text Normalization");
+
+  console.time("✂️ Chunk Generation");
+
+  const chunks =
+    chunkingService.createChunks(
+      normalizedText
+    );
+
+  console.timeEnd("✂️ Chunk Generation");
+
+  console.log("\n========== SUMMARY ==========\n");
+
+  console.table({
+    Characters: rawText.length,
+    NormalizedCharacters:
+      normalizedText.length,
+    Chunks: chunks.length,
+    AverageChunkSize:
+      Math.round(
+        normalizedText.length /
+          chunks.length
+      ),
+  });
+
+  console.log("\n========== FIRST CHUNK ==========\n");
+
   console.log(chunks[0]);
-  console.log("Characters:", text.length);
-  console.log(text.slice(0, 2000));
+
+  console.log("\n========== SAMPLE CONTENT ==========\n");
+
+  console.log(
+    chunks[0]?.content.slice(0, 500)
+  );
+
+  console.log("\n====================================\n");
 }
 
-main();
+main().catch((error) => {
+  console.error(error);
+  process.exit(1);
+});

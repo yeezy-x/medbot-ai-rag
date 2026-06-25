@@ -77,7 +77,7 @@ export class NormalizationService {
     };
   }
 
-  private trim(text: string) {
+  public trim(text: string) {
     return text.trim();
   }
 }

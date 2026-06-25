@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "ingest": "tsx src/modules/knowledge/scripts/ingest-pdf.ts"
+    "ingest": "tsx src/modules/knowledge/scripts/ingest-pdf.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

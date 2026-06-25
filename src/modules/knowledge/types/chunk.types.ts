@@ -3,4 +3,6 @@ export interface Chunk {
   content: string;
   characterCount: number;
   estimatedTokens: number;
+  startOffset:number,
+  endOffset:number
 }
