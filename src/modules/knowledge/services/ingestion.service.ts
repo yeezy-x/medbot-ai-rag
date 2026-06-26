@@ -3,10 +3,12 @@ import { randomUUID } from "crypto";
 
 import { PdfService } from "./pdf.service";
 import { NormalizationService } from "./normalization.service";
-// FIXED: Fixed typo in file extension (.serivce -> .service)
 import { MetadataService } from "./metadata.service";
+import { EmbeddingService } from "./embedding.service";
+import { OllamaEmbeddingProvider } from "../providers/ollama.provider";
 
-import { KnowledgeChunk } from "../types/metadata.types";
+// Import the correct return type containing vectors
+import { EmbeddedKnowledgeChunk } from "../types/embedding.types";
 import { ChunkingService } from "./chunking.serivce";
 
 export interface IngestionOptions {
@@ -21,13 +23,18 @@ export class IngestionService {
     private readonly pdfService = new PdfService(),
     private readonly normalizationService = new NormalizationService(),
     private readonly chunkingService = new ChunkingService(),
-    private readonly metadataService = new MetadataService()
+    private readonly metadataService = new MetadataService(),
+    private readonly embeddingService = new EmbeddingService(new OllamaEmbeddingProvider())
   ) {}
 
+  /**
+   * Production Ingestion Pipeline
+   * PDF ➔ Extract ➔ Normalize ➔ Chunk ➔ Metadata Enrichment ➔ Batched Vectorization
+   */
   async ingest(
     pdfPath: string,
     options?: IngestionOptions
-  ): Promise<KnowledgeChunk[]> {
+  ): Promise<EmbeddedKnowledgeChunk[]> { // UPDATED: Returns embedded chunks
     // 1. Extract raw text from PDF
     const raw = await this.pdfService.extractText(pdfPath);
 
@@ -42,7 +49,7 @@ export class IngestionService {
     const defaultFileName = path.basename(pdfPath);
 
     // 5. Merge provided options with defaults and generate knowledge chunks
-    return this.metadataService.createKnowledgeChunks(
+    const knowledgeChunks = this.metadataService.createKnowledgeChunks(
       chunks,
       {
         id: randomUUID(),
@@ -53,5 +60,10 @@ export class IngestionService {
         fileName: defaultFileName,
       }
     );
+
+    // 6. Execute safe, batched embedding generation (Production Guardrail)
+    const embeddedChunks = await this.embeddingService.embedChunks(knowledgeChunks);
+
+    return embeddedChunks;
   }
 }
