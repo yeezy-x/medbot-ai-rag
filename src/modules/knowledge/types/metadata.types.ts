@@ -9,7 +9,7 @@ export interface SourceMetadata {
   version: string;
   language: string;
   fileName?:string;
-  checkSum?:string
+  checksum?:string
 }
 
 export interface StructuralMetadata {

@@ -27,25 +27,37 @@ export type AggregateDocument = {
 export type DocumentMinAggregateOutputType = {
   id: string | null
   title: string | null
+  fileName: string | null
   version: string | null
-  source: string | null
+  language: string | null
+  sourceType: string | null
+  checksum: string | null
   uploadedAt: Date | null
+  updatedAt: Date | null
 }
 
 export type DocumentMaxAggregateOutputType = {
   id: string | null
   title: string | null
+  fileName: string | null
   version: string | null
-  source: string | null
+  language: string | null
+  sourceType: string | null
+  checksum: string | null
   uploadedAt: Date | null
+  updatedAt: Date | null
 }
 
 export type DocumentCountAggregateOutputType = {
   id: number
   title: number
+  fileName: number
   version: number
-  source: number
+  language: number
+  sourceType: number
+  checksum: number
   uploadedAt: number
+  updatedAt: number
   _all: number
 }
 
@@ -53,25 +65,37 @@ export type DocumentCountAggregateOutputType = {
 export type DocumentMinAggregateInputType = {
   id?: true
   title?: true
+  fileName?: true
   version?: true
-  source?: true
+  language?: true
+  sourceType?: true
+  checksum?: true
   uploadedAt?: true
+  updatedAt?: true
 }
 
 export type DocumentMaxAggregateInputType = {
   id?: true
   title?: true
+  fileName?: true
   version?: true
-  source?: true
+  language?: true
+  sourceType?: true
+  checksum?: true
   uploadedAt?: true
+  updatedAt?: true
 }
 
 export type DocumentCountAggregateInputType = {
   id?: true
   title?: true
+  fileName?: true
   version?: true
-  source?: true
+  language?: true
+  sourceType?: true
+  checksum?: true
   uploadedAt?: true
+  updatedAt?: true
   _all?: true
 }
 
@@ -150,9 +174,13 @@ export type DocumentGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type DocumentGroupByOutputType = {
   id: string
   title: string
+  fileName: string
   version: string
-  source: string
+  language: string
+  sourceType: string
+  checksum: string | null
   uploadedAt: Date
+  updatedAt: Date
   _count: DocumentCountAggregateOutputType | null
   _min: DocumentMinAggregateOutputType | null
   _max: DocumentMaxAggregateOutputType | null
@@ -179,18 +207,26 @@ export type DocumentWhereInput = {
   NOT?: Prisma.DocumentWhereInput | Prisma.DocumentWhereInput[]
   id?: Prisma.StringFilter<"Document"> | string
   title?: Prisma.StringFilter<"Document"> | string
+  fileName?: Prisma.StringFilter<"Document"> | string
   version?: Prisma.StringFilter<"Document"> | string
-  source?: Prisma.StringFilter<"Document"> | string
+  language?: Prisma.StringFilter<"Document"> | string
+  sourceType?: Prisma.StringFilter<"Document"> | string
+  checksum?: Prisma.StringNullableFilter<"Document"> | string | null
   uploadedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   chunks?: Prisma.ChunkListRelationFilter
 }
 
 export type DocumentOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  fileName?: Prisma.SortOrder
   version?: Prisma.SortOrder
-  source?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  sourceType?: Prisma.SortOrder
+  checksum?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   chunks?: Prisma.ChunkOrderByRelationAggregateInput
 }
 
@@ -200,18 +236,26 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.DocumentWhereInput[]
   NOT?: Prisma.DocumentWhereInput | Prisma.DocumentWhereInput[]
   title?: Prisma.StringFilter<"Document"> | string
+  fileName?: Prisma.StringFilter<"Document"> | string
   version?: Prisma.StringFilter<"Document"> | string
-  source?: Prisma.StringFilter<"Document"> | string
+  language?: Prisma.StringFilter<"Document"> | string
+  sourceType?: Prisma.StringFilter<"Document"> | string
+  checksum?: Prisma.StringNullableFilter<"Document"> | string | null
   uploadedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   chunks?: Prisma.ChunkListRelationFilter
 }, "id">
 
 export type DocumentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  fileName?: Prisma.SortOrder
   version?: Prisma.SortOrder
-  source?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  sourceType?: Prisma.SortOrder
+  checksum?: Prisma.SortOrderInput | Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
   _count?: Prisma.DocumentCountOrderByAggregateInput
   _max?: Prisma.DocumentMaxOrderByAggregateInput
   _min?: Prisma.DocumentMinOrderByAggregateInput
@@ -223,98 +267,146 @@ export type DocumentScalarWhereWithAggregatesInput = {
   NOT?: Prisma.DocumentScalarWhereWithAggregatesInput | Prisma.DocumentScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Document"> | string
   title?: Prisma.StringWithAggregatesFilter<"Document"> | string
+  fileName?: Prisma.StringWithAggregatesFilter<"Document"> | string
   version?: Prisma.StringWithAggregatesFilter<"Document"> | string
-  source?: Prisma.StringWithAggregatesFilter<"Document"> | string
+  language?: Prisma.StringWithAggregatesFilter<"Document"> | string
+  sourceType?: Prisma.StringWithAggregatesFilter<"Document"> | string
+  checksum?: Prisma.StringNullableWithAggregatesFilter<"Document"> | string | null
   uploadedAt?: Prisma.DateTimeWithAggregatesFilter<"Document"> | Date | string
+  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Document"> | Date | string
 }
 
 export type DocumentCreateInput = {
   id?: string
   title: string
+  fileName: string
   version: string
-  source: string
+  language: string
+  sourceType: string
+  checksum?: string | null
   uploadedAt?: Date | string
+  updatedAt?: Date | string
   chunks?: Prisma.ChunkCreateNestedManyWithoutDocumentInput
 }
 
 export type DocumentUncheckedCreateInput = {
   id?: string
   title: string
+  fileName: string
   version: string
-  source: string
+  language: string
+  sourceType: string
+  checksum?: string | null
   uploadedAt?: Date | string
+  updatedAt?: Date | string
   chunks?: Prisma.ChunkUncheckedCreateNestedManyWithoutDocumentInput
 }
 
 export type DocumentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceType?: Prisma.StringFieldUpdateOperationsInput | string
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chunks?: Prisma.ChunkUpdateManyWithoutDocumentNestedInput
 }
 
 export type DocumentUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceType?: Prisma.StringFieldUpdateOperationsInput | string
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chunks?: Prisma.ChunkUncheckedUpdateManyWithoutDocumentNestedInput
 }
 
 export type DocumentCreateManyInput = {
   id?: string
   title: string
+  fileName: string
   version: string
-  source: string
+  language: string
+  sourceType: string
+  checksum?: string | null
   uploadedAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type DocumentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceType?: Prisma.StringFieldUpdateOperationsInput | string
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DocumentUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceType?: Prisma.StringFieldUpdateOperationsInput | string
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DocumentCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  fileName?: Prisma.SortOrder
   version?: Prisma.SortOrder
-  source?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  sourceType?: Prisma.SortOrder
+  checksum?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type DocumentMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  fileName?: Prisma.SortOrder
   version?: Prisma.SortOrder
-  source?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  sourceType?: Prisma.SortOrder
+  checksum?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type DocumentMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
+  fileName?: Prisma.SortOrder
   version?: Prisma.SortOrder
-  source?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  sourceType?: Prisma.SortOrder
+  checksum?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
+  updatedAt?: Prisma.SortOrder
 }
 
 export type DocumentScalarRelationFilter = {
   is?: Prisma.DocumentWhereInput
   isNot?: Prisma.DocumentWhereInput
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type DocumentCreateNestedOneWithoutChunksInput = {
@@ -334,17 +426,25 @@ export type DocumentUpdateOneRequiredWithoutChunksNestedInput = {
 export type DocumentCreateWithoutChunksInput = {
   id?: string
   title: string
+  fileName: string
   version: string
-  source: string
+  language: string
+  sourceType: string
+  checksum?: string | null
   uploadedAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type DocumentUncheckedCreateWithoutChunksInput = {
   id?: string
   title: string
+  fileName: string
   version: string
-  source: string
+  language: string
+  sourceType: string
+  checksum?: string | null
   uploadedAt?: Date | string
+  updatedAt?: Date | string
 }
 
 export type DocumentCreateOrConnectWithoutChunksInput = {
@@ -366,17 +466,25 @@ export type DocumentUpdateToOneWithWhereWithoutChunksInput = {
 export type DocumentUpdateWithoutChunksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceType?: Prisma.StringFieldUpdateOperationsInput | string
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type DocumentUncheckedUpdateWithoutChunksInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
+  fileName?: Prisma.StringFieldUpdateOperationsInput | string
   version?: Prisma.StringFieldUpdateOperationsInput | string
-  source?: Prisma.StringFieldUpdateOperationsInput | string
+  language?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceType?: Prisma.StringFieldUpdateOperationsInput | string
+  checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -413,9 +521,13 @@ export type DocumentCountOutputTypeCountChunksArgs<ExtArgs extends runtime.Types
 export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  fileName?: boolean
   version?: boolean
-  source?: boolean
+  language?: boolean
+  sourceType?: boolean
+  checksum?: boolean
   uploadedAt?: boolean
+  updatedAt?: boolean
   chunks?: boolean | Prisma.Document$chunksArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["document"]>
@@ -423,28 +535,40 @@ export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
 export type DocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  fileName?: boolean
   version?: boolean
-  source?: boolean
+  language?: boolean
+  sourceType?: boolean
+  checksum?: boolean
   uploadedAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["document"]>
 
 export type DocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   title?: boolean
+  fileName?: boolean
   version?: boolean
-  source?: boolean
+  language?: boolean
+  sourceType?: boolean
+  checksum?: boolean
   uploadedAt?: boolean
+  updatedAt?: boolean
 }, ExtArgs["result"]["document"]>
 
 export type DocumentSelectScalar = {
   id?: boolean
   title?: boolean
+  fileName?: boolean
   version?: boolean
-  source?: boolean
+  language?: boolean
+  sourceType?: boolean
+  checksum?: boolean
   uploadedAt?: boolean
+  updatedAt?: boolean
 }
 
-export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "version" | "source" | "uploadedAt", ExtArgs["result"]["document"]>
+export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "fileName" | "version" | "language" | "sourceType" | "checksum" | "uploadedAt" | "updatedAt", ExtArgs["result"]["document"]>
 export type DocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   chunks?: boolean | Prisma.Document$chunksArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCountOutputTypeDefaultArgs<ExtArgs>
@@ -460,9 +584,13 @@ export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     title: string
+    fileName: string
     version: string
-    source: string
+    language: string
+    sourceType: string
+    checksum: string | null
     uploadedAt: Date
+    updatedAt: Date
   }, ExtArgs["result"]["document"]>
   composites: {}
 }
@@ -889,9 +1017,13 @@ export interface Prisma__DocumentClient<T, Null = never, ExtArgs extends runtime
 export interface DocumentFieldRefs {
   readonly id: Prisma.FieldRef<"Document", 'String'>
   readonly title: Prisma.FieldRef<"Document", 'String'>
+  readonly fileName: Prisma.FieldRef<"Document", 'String'>
   readonly version: Prisma.FieldRef<"Document", 'String'>
-  readonly source: Prisma.FieldRef<"Document", 'String'>
+  readonly language: Prisma.FieldRef<"Document", 'String'>
+  readonly sourceType: Prisma.FieldRef<"Document", 'String'>
+  readonly checksum: Prisma.FieldRef<"Document", 'String'>
   readonly uploadedAt: Prisma.FieldRef<"Document", 'DateTime'>
+  readonly updatedAt: Prisma.FieldRef<"Document", 'DateTime'>
 }
     
 

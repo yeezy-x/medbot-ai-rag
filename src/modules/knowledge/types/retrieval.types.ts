@@ -1,5 +1,5 @@
 export interface RetrievedChunk {
-  chunkId: string;
+  id: string;
   content: string;
   pageNumber: number;
   chapter?: string;
@@ -9,9 +9,9 @@ export interface RetrievedChunk {
 }
 
 export interface CitationReference {
-  chunkId: string;
+  id: string;
   pageNumber: number;
-  sourceTitle: string;
+  documentTitle: string;
 }
 
 export interface RetrievalResult {

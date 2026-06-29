@@ -7,3 +7,11 @@ export interface Chunk {
   endOffset:number
 }
 
+export interface ChunkBuilderState {
+  chunks: Chunk[];
+  currentParts: string[];
+  currentLength: number;
+  chunkIndex: number;
+  currentStartOffset: number;
+  processedCharacters: number;
+}

@@ -1,15 +1,11 @@
+import { SourceType } from "./metadata.types";
+
 export interface DocumentMetadata {
   id: string;
-
   title: string;
-
   version: string;
-
   language: string;
-
-  sourceType: "PDF";
-
+  sourceType: SourceType;
   fileName: string;
-
   checksum?: string;
 }
