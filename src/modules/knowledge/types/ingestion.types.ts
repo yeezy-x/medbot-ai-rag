@@ -1,8 +1,10 @@
+import { SourceType } from "./metadata.types";
+
 export interface IngestionOptions {
   title?: string;
   version?: string;
   language?: string;
-  sourceType?: "PDF";
+  sourceType?:SourceType;
 }
 
 export interface IngestionResult {

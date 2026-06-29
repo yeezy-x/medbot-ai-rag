@@ -8,15 +8,9 @@ import { EmbeddingService } from "./embedding.service";
 import { OllamaEmbeddingProvider } from "../providers/ollama.provider";
 
 // Import the correct return type containing vectors
-import { EmbeddedKnowledgeChunk } from "../types/embedding.types";
 import { ChunkingService } from "./chunking.serivce";
-
-export interface IngestionOptions {
-  title?: string;
-  version?: string;
-  language?: string;
-  sourceType?: "PDF";
-}
+import { IngestionOptions, IngestionResult } from "../types/ingestion.types";
+import { VectorService } from "./vector.service";
 
 export class IngestionService {
   constructor(
@@ -24,7 +18,8 @@ export class IngestionService {
     private readonly normalizationService = new NormalizationService(),
     private readonly chunkingService = new ChunkingService(),
     private readonly metadataService = new MetadataService(),
-    private readonly embeddingService = new EmbeddingService(new OllamaEmbeddingProvider())
+    private readonly embeddingService = new EmbeddingService(new OllamaEmbeddingProvider()),
+    private readonly vectorService = new VectorService()
   ) {}
 
   /**
@@ -34,7 +29,10 @@ export class IngestionService {
   async ingest(
     pdfPath: string,
     options?: IngestionOptions
-  ): Promise<EmbeddedKnowledgeChunk[]> { // UPDATED: Returns embedded chunks
+  ): Promise<IngestionResult> { // UPDATED: Returns embedded chunks
+    const startedAt=Date.now();
+    const documentId=randomUUID()
+
     // 1. Extract raw text from PDF
     const raw = await this.pdfService.extractText(pdfPath);
 
@@ -63,7 +61,20 @@ export class IngestionService {
 
     // 6. Execute safe, batched embedding generation (Production Guardrail)
     const embeddedChunks = await this.embeddingService.embedChunks(knowledgeChunks);
-
-    return embeddedChunks;
+    const vectorResult = await this.vectorService.upsert({documents:embeddedChunks})
+    return {
+      documentId,
+      chunkCount:
+        embeddedChunks.length,
+      embeddingCount:
+        embeddedChunks.length,
+      inserted:
+        vectorResult.inserted,
+      updated:
+        vectorResult.updated,
+      durationMs:
+        Date.now() -
+        startedAt,
+    };
   }
 }
