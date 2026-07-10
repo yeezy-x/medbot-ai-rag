@@ -1,53 +1,47 @@
 // src/repositories/chat.repository.ts
 
+import { prisma } from "@/lib/prisma";
 
-import { BaseRepository } from "./base.repository";
+import {
+  Prisma,
+} from "@/generated/client";
 
-import { CitationReference } from "@/modules/knowledge/types/retrieval.types";
-import { CreateMessageDto } from "@/modules/chat/types/chat-repository.types";
+import {
+  CitationReference,
+} from "@/modules/knowledge/types/retrieval.types";
+import { CreateMessageDto } from "../types/chat-repository.types";
 
-
-export class ChatRepository extends BaseRepository {
+export class ChatRepository {
 
   // ---------------------------------------------------------------------------
-  // Chat Sessions
+  // Chat Session
   // ---------------------------------------------------------------------------
 
   async create(
-    data: {
-      title: string;
-      userId: string;
-    }
+    data: Prisma.ChatSessionCreateInput
   ) {
-    return this.db.chatSession.create({
-      data:{
-        title: data.title,
-        user:{
-          connect:{
-            id: data.userId
-          }
-        }
-      }
+    return prisma.chatSession.create({
+      data,
     });
   }
 
   async findById(
-    id: string
+    chatId: string
   ) {
-    return this.db.chatSession.findUnique({
+    return prisma.chatSession.findUnique({
       where: {
-        id,
+        id: chatId,
       },
     });
   }
 
   async findByIdAndUserId(
-    id: string,
+    chatId: string,
     userId: string
   ) {
-    return this.db.chatSession.findFirst({
+    return prisma.chatSession.findFirst({
       where: {
-        id,
+        id: chatId,
         userId,
       },
     });
@@ -56,36 +50,23 @@ export class ChatRepository extends BaseRepository {
   async findByUserId(
     userId: string
   ) {
-    return this.db.chatSession.findMany({
+    return prisma.chatSession.findMany({
       where: {
         userId,
       },
+
       orderBy: {
         updatedAt: "desc",
       },
     });
   }
 
-  async updateTitle(
-    id: string,
-    title: string
-  ) {
-    return this.db.chatSession.update({
-      where: {
-        id,
-      },
-      data: {
-        title,
-      },
-    });
-  }
-
   async delete(
-    id: string
+    chatId: string
   ) {
-    return this.db.chatSession.delete({
+    return prisma.chatSession.delete({
       where: {
-        id,
+        id: chatId,
       },
     });
   }
@@ -97,10 +78,10 @@ export class ChatRepository extends BaseRepository {
   async createMessage(
     data: CreateMessageDto
   ) {
-    return this.db.message.create({
+    return prisma.message.create({
       data: {
         sessionId: data.sessionId,
-        role: data.role, // Type assertion to bypass type mismatch
+        role: data.role,
         content: data.content,
       },
     });
@@ -109,13 +90,15 @@ export class ChatRepository extends BaseRepository {
   async getConversation(
     sessionId: string
   ) {
-    return this.db.message.findMany({
+    return prisma.message.findMany({
       where: {
         sessionId,
       },
+
       include: {
         citations: true,
       },
+
       orderBy: {
         createdAt: "asc",
       },
@@ -134,13 +117,19 @@ export class ChatRepository extends BaseRepository {
       return;
     }
 
-    return this.db.citation.createMany({
+    await prisma.citation.createMany({
       data: citations.map(
         citation => ({
           messageId,
-          chunkId: citation.chunkId,
-          pageNumber: citation.pageNumber ?? 0,
-          sourceTitle: citation.sourceTitle,
+
+          chunkId:
+            citation.chunkId,
+
+          pageNumber:
+            citation.pageNumber ?? 0,
+
+          sourceTitle:
+            citation.sourceTitle,
         })
       ),
     });

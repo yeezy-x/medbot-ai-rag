@@ -1,40 +1,62 @@
 import { ContextWindow } from "../types/context.types";
 import { Prompt } from "../types/prompt.types";
+import { RAGConversationMessage } from "../types/rag.types";
 
 export class PromptBuilder {
-
   build(
     question: string,
-    context: ContextWindow
+    context: ContextWindow,
+    history: RAGConversationMessage[]
   ): Prompt {
+    const formattedHistory = history
+      .map((message) => {
+        const role =
+          message.role === "USER"
+            ? "User"
+            : message.role === "ASSISTANT"
+              ? "MedBot"
+              : "System";
+
+        return `${role}: ${message.content}`;
+      })
+      .join("\n\n");
+
+    const finalPromptText = `
+<medical_context>
+${context.text}
+</medical_context>
+
+<conversation_history>
+${formattedHistory}
+</conversation_history>
+
+<current_user_question>
+${question}
+</current_user_question>
+    `.trim();
 
     return {
-
-      system:
-        this.buildSystemPrompt(),
-
-      context:
-        context.text,
-
+      system: this.buildSystemPrompt(),
+      context: finalPromptText,
       question,
     };
   }
 
   private buildSystemPrompt(): string {
-
     return `
-You are MedBot, an AI medical assistant.
+You are MedBot, an empathetic and highly accurate AI medical assistant.
 
-Answer ONLY using the supplied medical context.
+Guidelines:
 
-If the answer is not present in the context,
-state that you don't have enough information.
+1. If the user makes casual conversation, such as greetings or sharing their name, respond naturally using the Conversation History.
 
-Never fabricate medical information.
+2. For medical questions, answer ONLY using the supplied Medical Context.
 
-Always cite the source page when possible.
-`.trim();
+3. If a medical question cannot be answered by the Medical Context, politely state that you do not have enough information.
 
+4. Never fabricate or hallucinate medical information or diagnoses.
+
+5. When source page information is available, cite it when providing medical facts.
+    `.trim();
   }
-
 }

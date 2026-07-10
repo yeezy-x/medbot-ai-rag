@@ -4,7 +4,7 @@ export interface IngestionOptions {
   title?: string;
   version?: string;
   language?: string;
-  sourceType?:SourceType;
+  sourceType?: SourceType;
 }
 
 export interface IngestionResult {

@@ -1,103 +1,53 @@
+// src/modules/knowledge/scripts/ingest-pdf.ts
+import "dotenv/config";
 import path from "path";
+import fs from "fs";
 
-import { PdfService } from "../services/pdf.service";
-import { NormalizationService } from "../services/normalization.service";
-import { ChunkingService } from "../services/chunking.serivce";
-import { MetadataService } from "../services/metadata.service";
-import { randomUUID } from "crypto";
+import { IngestionService } from "../services/ingestion.service";
 
 async function main() {
   console.log("\n====================================");
   console.log("📚 MedBot Knowledge Ingestion");
   console.log("====================================\n");
 
-  const pdfService = new PdfService();
-  const normalizationService = new NormalizationService();
-  const chunkingService = new ChunkingService();
-  const metadataService=new MetadataService()
-
+  // 1. Accept CLI arguments for the PDF filename/path (defaulting to gale-encyclopedia.pdf)
+  const fileName = process.argv[2] || "gale-encyclopedia.pdf";
   const pdfPath = path.resolve(
     process.cwd(),
     "knowledge-base",
-    "gale-encyclopedia.pdf"
+    fileName
   );
 
-  console.time("📄 PDF Extraction");
+  // 2. Validate file existence before processing
+  if (!fs.existsSync(pdfPath)) {
+    console.error(`❌ Error: File not found at ${pdfPath}`);
+    process.exit(1);
+  }
 
-  const rawText =
-    await pdfService.extractText(pdfPath);
+  const ingestionService = new IngestionService();
 
-  console.timeEnd("📄 PDF Extraction");
+  console.time("🚀 Total Ingestion");
 
-  console.time("🧹 Text Normalization");
-
-  const normalizationResult = normalizationService.normalize(rawText);
-  const normalizedText = normalizationResult.text;
-
-  console.timeEnd("🧹 Text Normalization");
-
-  console.time("✂️ Chunk Generation");
-
-  const chunks =
-    chunkingService.createChunks(
-      normalizedText
-    );
-
-  console.timeEnd("✂️ Chunk Generation");
-
-  console.log("\n========== SUMMARY ==========\n");
-
-  const knowledgeChunks =
-    metadataService.createKnowledgeChunks(
-      chunks,
+  try {
+    const result = await ingestionService.ingest(
+      pdfPath,
       {
-        id: randomUUID(),
-
-        title:
-          "Gale Encyclopedia of Medicine",
-
+        title: "Gale Encyclopedia of Medicine",
         version: "5th Edition",
-
         language: "en",
-
         sourceType: "PDF",
-
-        fileName:
-          "gale-encyclopedia.pdf",
       }
     );
 
-  console.table({
-    Characters: rawText.length,
-    NormalizedCharacters: normalizedText.length,
-    Chunks: chunks.length,
-    KnowledgeChunks: knowledgeChunks.length,
-    AverageChunkSize:
-      Math.round(
-        normalizedText.length /
-          chunks.length
-      ),
-  });
+    console.timeEnd("🚀 Total Ingestion");
 
-  console.log("\n========== FIRST CHUNK ==========\n");
-
-  console.log(chunks[0]);
-
-  console.log("\n========== SAMPLE CONTENT ==========\n");
-
-  console.log(
-    chunks[0]?.content.slice(0, 500)
-  );
-
-  console.log("\n====================================\n");
-
-  console.log("\nFIRST KNOWLEDGE CHUNK")
-  console.dir(
-    knowledgeChunks[0],
-    {
-      depth: null,
-    }
-  );
+    console.log("\n========== RESULT ==========\n");
+    console.table(result);
+    console.log("\n====================================\n");
+  } catch (error) {
+    console.error("❌ Ingestion failed:", error);
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {

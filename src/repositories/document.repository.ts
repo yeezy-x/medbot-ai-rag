@@ -8,6 +8,9 @@ extends BaseRepository {
     title: string;
     version: string;
     source: string;
+    fileName: string;
+    language: string;
+    sourceType: string;
   }) {
     return this.db.document.create({
       data,

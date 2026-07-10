@@ -6,7 +6,6 @@ generator client {
 
 datasource db {
   provider   = "postgresql"
-  extensions = [pgvector(map: "vector")] // 👈 Make sure this is here
 }
 
 model User {

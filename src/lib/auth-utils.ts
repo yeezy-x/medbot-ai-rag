@@ -4,11 +4,10 @@ import { redirect } from "next/navigation";
 
 export async function requireUser() {
   const session = await auth();
-
   if (!session?.user) {
-    throw new AuthError();
+    //safely redirect to login page if user is not authenticated
+    redirect("/login");
   }
-
   return session.user;
 }
 

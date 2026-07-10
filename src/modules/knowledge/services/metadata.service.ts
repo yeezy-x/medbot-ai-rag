@@ -51,7 +51,7 @@ export class MetadataService {
         fileName:
           document.fileName,
 
-        checkSum:
+        checksum:
           document.checksum,
       },
 

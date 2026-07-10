@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "tsx prisma/seed.ts",
-    "ingest": "tsx src/modules/knowledge/scripts/ingest-pdf.ts",
+    "ingest": "tsx -r dotenv/config src/modules/knowledge/scripts/ingest-pdf.ts",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"

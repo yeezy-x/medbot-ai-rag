@@ -4,7 +4,7 @@ import { Prisma } from "@/generated/client";
 import { prisma } from "@/lib/prisma";
 
 import { VectorProvider } from "./vector.provider";
-
+import { SourceType } from "../types/metadata.types";
 import {
   DeleteVectorRequest,
   SimilarityMetric,
@@ -114,24 +114,16 @@ export class PostgresVectorProvider implements VectorProvider {
     );
 
     const rows = await this.db.$queryRaw<ChunkSearchRow[]>(Prisma.sql`
-      SELECT
-        c.id,
-        c."documentId",
-        c."chunkIndex",
-        c.content,
-        c."characterCount",
-        c."estimatedTokens",
-        c."startOffset",
-        c."endOffset",
-        c."pageNumber",
-        c.chapter,
-        c.section,
-        c.headings,
-        1 - (c.embedding <=> CAST(${vector} AS vector)) AS score
+      SELECT c.*, d.title, d.version, 1 - (c.embedding <=> CAST(${vector} AS vector)) AS score
       FROM "Chunk" c
+      JOIN "Document" d ON c."documentId" = d.id
       ORDER BY c.embedding <=> CAST(${vector} AS vector)
       LIMIT ${request.topK}
     `);
+
+    console.log("========== VECTOR SEARCH ==========");
+    console.log("Rows:", rows.length);
+    console.log(rows.slice(0, 3));
 
     return rows.map(row => {
       const calculatedScore = Number(row.score);
@@ -140,14 +132,21 @@ export class PostgresVectorProvider implements VectorProvider {
         score: calculatedScore,
         chunk: {
           id: row.id,
+          documentId: row.documentId,      // ✅ Flat property
           content: row.content,
-          // RetrievedChunk expects a required number, so fallback to 0 if null
-          pageNumber: row.pageNumber ?? 0, 
+          score: calculatedScore,
+          pageNumber: row.pageNumber ?? undefined, // ✅ Optional, safe to fall back to undefined
           chapter: row.chapter ?? undefined,
           section: row.section ?? undefined,
-          // RetrievedChunk requires documentTitle (we pass empty string for now until joined)
-          documentTitle: "", 
-          score: calculatedScore,
+          headings: row.headings ?? [],
+          
+          // ✅ Must match the source metadata contract exactly
+          source: {
+            title: "",                     // Placeholder until you join the Document table
+            version: "1.0.0",              // Default placeholder string
+            language: "en",
+            sourceType: "unknown" as SourceType, // Default placeholder string
+          },
         },
       };
     });

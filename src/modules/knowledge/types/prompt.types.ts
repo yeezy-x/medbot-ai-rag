@@ -1,5 +1,5 @@
 export interface PromptMessage {
-  role: "system" | "user";
+  role: "system" | "user" | "assistant";
   content: string;
 }
 
