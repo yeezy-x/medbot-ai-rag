@@ -1,17 +1,16 @@
-import { BaseRepository }
-from "./base.repository";
+import { BaseRepository } from "./base.repository";
 
-export class DocumentRepository
-extends BaseRepository {
+export interface CreateDocumentData {
+  title: string;
+  version: string;
+  fileName: string;
+  language: string;
+  sourceType: string;
+  checksum?: string;
+}
 
-  async create(data: {
-    title: string;
-    version: string;
-    source: string;
-    fileName: string;
-    language: string;
-    sourceType: string;
-  }) {
+export class DocumentRepository extends BaseRepository {
+  async create(data: CreateDocumentData) {
     return this.db.document.create({
       data,
     });
@@ -27,7 +26,33 @@ extends BaseRepository {
 
   async findById(id: string) {
     return this.db.document.findUnique({
-      where: { id },
+      where: {
+        id,
+      },
+    });
+  }
+
+  async findByChecksum(checksum: string) {
+    return this.db.document.findUnique({
+      where: {
+        checksum,
+      },
+    });
+  }
+
+  async countChunks(documentId: string): Promise<number> {
+    return this.db.chunk.count({
+      where: {
+        documentId,
+      },
+    });
+  }
+
+  async delete(id: string) {
+    return this.db.document.delete({
+      where: {
+        id,
+      },
     });
   }
 }

@@ -1,0 +1,2 @@
+export const MAX_HISTORY_MESSAGES = 10;
+export const MAX_HISTORY_CHARACTERS = 8_000;

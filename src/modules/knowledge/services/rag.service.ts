@@ -1,4 +1,6 @@
-import { RetrievalService } from "./retrieval.service";
+import {
+  RetrievalService,
+} from "./retrieval.service";
 
 import {
   ContextBuilder,
@@ -20,7 +22,7 @@ import {
 
 import {
   DEFAULT_TOP_K,
-} from "@/modules/chat/constants/retrieval.constants";
+} from "../constants/retrieval.constants";
 
 export class RAGService {
   constructor(
@@ -45,30 +47,52 @@ export class RAGService {
    *   ↓
    * Retrieval
    *   ↓
-   * Context
+   * Context filtering / selection
    *   ↓
    * Prompt
    */
   private async buildContext(
     request: RAGRequest
   ): Promise<RAGContext> {
-    // 1. Retrieve relevant medical knowledge
+    /*
+     * 1. Retrieve potentially relevant
+     * medical knowledge.
+     */
     const retrieval =
       await this.retrievalService.retrieve({
-        query: request.question,
+        query:
+          request.question,
 
         topK:
           request.topK ??
           DEFAULT_TOP_K,
       });
 
-    // 2. Build structured context window
+    /*
+     * 2. Build the final context window.
+     *
+     * ContextBuilder may:
+     * - reject low-score chunks
+     * - deduplicate chunks
+     * - enforce context budget
+     *
+     * Therefore:
+     *
+     * retrieval.chunks.length
+     *
+     * may be greater than:
+     *
+     * context.chunks.length
+     */
     const context =
       this.contextBuilder.build(
         retrieval.chunks
       );
 
-    // 3. Build final prompt with conversation history
+    /*
+     * 3. Build the final prompt using only
+     * the accepted context window.
+     */
     const prompt =
       this.promptBuilder.build(
         request.question,
@@ -91,34 +115,95 @@ export class RAGService {
    * Augment
    *   ↓
    * Generate
+   *
+   * No chat persistence belongs here.
    */
   async generate(
     request: RAGRequest
   ): Promise<RAGResponse> {
-    const startedAt = Date.now();
+    const startedAt =
+      Date.now();
 
-    // 1. Build retrieval context and prompt
+    /*
+     * 1. Run retrieval and construct
+     * the accepted context window.
+     */
     const ragContext =
-      await this.buildContext(request);
+      await this.buildContext(
+        request
+      );
+
+    /*
+     * 2. Determine exactly which chunks
+     * were accepted by ContextBuilder.
+     */
+    const acceptedChunkIds =
+      new Set(
+        ragContext.context.chunks.map(
+          (chunk) => chunk.id
+        )
+      );
+
+    /*
+     * 3. Keep citations only for chunks
+     * that are actually present in the
+     * context sent to the LLM.
+     *
+     * This prevents citation
+     * over-attribution.
+     */
+    const citations =
+      ragContext.retrieval.citations.filter(
+        (citation) =>
+          acceptedChunkIds.has(
+            citation.chunkId
+          )
+      );
+
+    /*
+     * 4. Development observability.
+     */
+    console.log(
+      "\n========== RAG PIPELINE =========="
+    );
+
+    console.log({
+      question:
+        request.question,
+
+      retrievedChunks:
+        ragContext.retrieval.chunks.length,
+
+      acceptedContextChunks:
+        ragContext.context.chunks.length,
+
+      returnedCitations:
+        citations.length,
+    });
 
     console.log(
-      `[RAG FLOW] Retrieved ${ragContext.retrieval.chunks.length} chunks for query: "${request.question}"`
+      "\n[RAG FLOW] Final Context Sent to LLM:"
     );
 
     console.log(
-      "[RAG FLOW] Final Context Sent to LLM:",
       ragContext.context.text
     );
 
     console.log(
-      "[RAG FLOW] Final Prompt Sent to LLM:",
+      "\n[RAG FLOW] Final Prompt Sent to LLM:"
+    );
+
+    console.log(
       ragContext.prompt.context
     );
 
-    // 2. Generate the answer
+    /*
+     * 5. Generate the final answer.
+     */
     const response =
       await this.ollamaChatService.generate({
-        model: "qwen2.5-coder:3b",
+        model:
+          "qwen2.5-coder:3b",
 
         system:
           ragContext.prompt.system,
@@ -126,21 +211,37 @@ export class RAGService {
         prompt:
           ragContext.prompt.context,
 
-        stream: false,
+        stream:
+          false,
       });
+
     console.log(
-      "========== OLLAMA =========="
+      "\n========== OLLAMA =========="
     );
+
     console.log(response);
-    // 3. Return AI result only.
-    // No database persistence belongs here.
+
+    /*
+     * 6. Return only the AI-domain result.
+     *
+     * Database persistence remains the
+     * responsibility of ChatService.
+     */
     return {
-      answer: response.response,
-      citations: ragContext.retrieval.citations,
+      answer:
+        response.response,
+
+      citations,
+
       metrics: {
-        durationMs:Date.now() - startedAt,
-        retrievalDurationMs:ragContext.retrieval.durationMs,
-        chunkCount:ragContext.retrieval.chunks.length,
+        durationMs:
+          Date.now() - startedAt,
+
+        retrievalDurationMs:
+          ragContext.retrieval.durationMs,
+
+        chunkCount:
+          ragContext.context.chunks.length,
       },
     };
   }

@@ -4,7 +4,8 @@ export interface Chunk {
   characterCount: number;
   estimatedTokens: number;
   startOffset:number,
-  endOffset:number
+  endOffset:number,
+  pageNumber?: number;
 }
 
 export interface ChunkBuilderState {

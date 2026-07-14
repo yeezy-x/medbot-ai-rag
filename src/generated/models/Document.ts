@@ -232,6 +232,7 @@ export type DocumentOrderByWithRelationInput = {
 
 export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   id?: string
+  checksum?: string
   AND?: Prisma.DocumentWhereInput | Prisma.DocumentWhereInput[]
   OR?: Prisma.DocumentWhereInput[]
   NOT?: Prisma.DocumentWhereInput | Prisma.DocumentWhereInput[]
@@ -240,11 +241,10 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   version?: Prisma.StringFilter<"Document"> | string
   language?: Prisma.StringFilter<"Document"> | string
   sourceType?: Prisma.StringFilter<"Document"> | string
-  checksum?: Prisma.StringNullableFilter<"Document"> | string | null
   uploadedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   chunks?: Prisma.ChunkListRelationFilter
-}, "id">
+}, "id" | "checksum">
 
 export type DocumentOrderByWithAggregationInput = {
   id?: Prisma.SortOrder

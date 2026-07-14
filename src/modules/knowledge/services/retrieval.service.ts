@@ -23,8 +23,7 @@ export class RetrievalService {
   async retrieve(request: RetrievalRequest): Promise<RetrievalResult> {
   const startedAt = Date.now();
   // 1. Generate embedding for the user's query
-  const embeddingResponse =
-    await this.embeddingService.embedChunk({
+  const embeddingResponse = await this.embeddingService.embedChunk({
       id:"query-temp-id",
       content: request.query,
     }as unknown as KnowledgeChunk) ;
@@ -34,6 +33,7 @@ export class RetrievalService {
     await this.vectorService.search({
       embedding: embeddingResponse.embedding,
       topK: request.topK,
+      minScore: request.minScore,
       filter: request.filters,
     });
     // --- ADD THIS LOG ---
@@ -59,43 +59,116 @@ export class RetrievalService {
   };
 }
 
-  private mapRetrievedChunks(searchResults: Awaited<ReturnType<VectorService["search"]>>): RetrievedChunk[] {
+ private mapRetrievedChunks(
+  searchResults: Awaited<
+    ReturnType<VectorService["search"]>
+  >
+): RetrievedChunk[] {
   return searchResults.map(
-    ({ chunk, score }) => ({
-      id: chunk.id,
-      documentId:
-        chunk.documentId,
-      content:
-        chunk.content,
-      score,
-      pageNumber:
-        chunk.pageNumber,
-      chapter:
-        chunk.chapter,
-      section:
-        chunk.section,
-      headings:
-        chunk.headings,
-      source: {
-        title:
-          chunk.source.title,
-        version:
-          chunk.source.version,
-        language:
-          chunk.source.language,
-        sourceType:
-          chunk.source.sourceType,
-      },
-    })
+    ({ chunk, score }) => {
+      if (!chunk.id) {
+        throw new Error(
+          "Retrieved chunk is missing id."
+        );
+      }
+
+      if (!chunk.documentId) {
+        throw new Error(
+          `Retrieved chunk ${chunk.id} is missing documentId.`
+        );
+      }
+
+      if (!chunk.content.trim()) {
+        throw new Error(
+          `Retrieved chunk ${chunk.id} has empty content.`
+        );
+      }
+
+      if (!Number.isFinite(score)) {
+        throw new Error(
+          `Retrieved chunk ${chunk.id} has invalid score: ${score}`
+        );
+      }
+
+      if (!chunk.source.title.trim()) {
+        throw new Error(
+          `Retrieved chunk ${chunk.id} is missing source title.`
+        );
+      }
+
+      return {
+        id: chunk.id,
+        documentId: chunk.documentId,
+        content: chunk.content,
+        score,
+
+        pageNumber:
+          chunk.pageNumber,
+
+        chapter:
+          chunk.chapter,
+
+        section:
+          chunk.section,
+
+        headings:
+          chunk.headings ?? [],
+
+        source: {
+          title:
+            chunk.source.title,
+
+          version:
+            chunk.source.version,
+
+          language:
+            chunk.source.language,
+
+          sourceType:
+            chunk.source.sourceType,
+        },
+      };
+    }
   );
 }
 
-  private buildCitations(chunks: RetrievedChunk[]): CitationReference[] {
-  return chunks.map((chunk) => ({
-    chunkId: chunk.id,
-    documentId: chunk.documentId,
-    pageNumber: chunk.pageNumber,
-    sourceTitle: chunk.source.title,
-  }));
+  private buildCitations(
+  chunks: RetrievedChunk[]
+): CitationReference[] {
+  return chunks.map((chunk) => {
+    if (!chunk.id) {
+      throw new Error(
+        "Cannot build citation: chunk is missing id."
+      );
+    }
+
+    if (!chunk.documentId) {
+      throw new Error(
+        `Cannot build citation for chunk ${chunk.id}: ` +
+        `documentId is missing.`
+      );
+    }
+
+    if (chunk.pageNumber === undefined) {
+      throw new Error(
+        `Cannot build citation for chunk ${chunk.id}: ` +
+        `pageNumber is missing.`
+      );
+    }
+
+    if (!chunk.source.title.trim()) {
+      throw new Error(
+        `Cannot build citation for chunk ${chunk.id}: ` +
+        `source title is missing.`
+      );
+    }
+
+    return {
+      chunkId: chunk.id,
+      documentId: chunk.documentId,
+      pageNumber: chunk.pageNumber,
+      sourceTitle: chunk.source.title,
+    };
+  });
 }
 }

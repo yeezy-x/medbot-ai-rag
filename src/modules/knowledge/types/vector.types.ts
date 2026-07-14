@@ -36,6 +36,7 @@ export interface VectorSearchFilter {
 export interface VectorSearchQuery {
   embedding: EmbeddingVector;
   topK: number;
+  minScore?: number;
   filter?: VectorSearchFilter;
 }
 

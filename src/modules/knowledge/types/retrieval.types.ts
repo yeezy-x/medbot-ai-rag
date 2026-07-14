@@ -22,13 +22,14 @@ export interface RetrievedChunk {
 export interface CitationReference {
   chunkId: string;
   documentId: string;
-  pageNumber?: number;
+  pageNumber: number;
   sourceTitle: string;
 }
 
 export interface RetrievalRequest {
   query: string;
   topK: number;
+  minScore?: number;
   filters?: {
     documentId?: string;
     chapter?: string;

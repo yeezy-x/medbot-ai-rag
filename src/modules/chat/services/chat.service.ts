@@ -19,13 +19,10 @@ import {
 } from "@/modules/knowledge/services/rag.service";
 
 import type {
-  RAGConversationMessage,
-} from "@/modules/knowledge/types/rag.types";
-
-import type {
   SendMessageRequest,
   SendMessageResponse,
 } from "../types/chat.types";
+import { DEFAULT_TOP_K } from "@/modules/knowledge/constants/retrieval.constants";
 
 export class ChatService extends BaseService {
   private readonly chatRepository =
@@ -86,10 +83,6 @@ export class ChatService extends BaseService {
       );
     }
 
-    if (chat.userId !== userId) {
-      throw new ForbiddenError();
-    }
-
     return chat;
   }
 
@@ -120,73 +113,99 @@ export class ChatService extends BaseService {
     };
   }
 
-  async sendMessage(
-    request: SendMessageRequest
-  ): Promise<SendMessageResponse> {
-    // 1. Validate ownership
-    await this.getChatById(
-      request.chatId,
-      request.userId
-    );
+  async getConversation(chatId:string, userId:string){
+    await this.getChatById(chatId, userId);
+    return this.chatRepository.getConversation(chatId);
+  }
 
-    // 2. Load previous conversation history
-    const conversation =
-      await this.chatRepository.getConversation(
+  async sendMessage(
+  request: SendMessageRequest
+): Promise<SendMessageResponse> {
+  /*
+   * 1. Validate ownership.
+   */
+  await this.getChatById(
+    request.chatId,
+    request.userId
+  );
+
+  /*
+   * 2. Load previous history BEFORE saving
+   * the current user message.
+   */
+  const history =
+    await this.chatRepository
+      .getConversation(
         request.chatId
       );
 
-    const history: RAGConversationMessage[] =
-      conversation.map((message) => ({
-        role: message.role,
-        content: message.content,
-      }));
+  /*
+   * 3. Persist current user message.
+   */
+  await this.chatRepository
+    .createMessage({
+      sessionId:
+        request.chatId,
 
-    // 3. Persist current user message
-    await this.chatRepository.createMessage({
-      sessionId: request.chatId,
-      role: "USER",
-      content: request.message,
+      role:
+        "USER",
+
+      content:
+        request.message,
     });
 
-    // 4. Run RAG pipeline
-    const ragResponse =
-      await this.ragService.generate({
-        question: request.message,
-        history,
+  /*
+   * 4. Run RAG pipeline.
+   */
+  const ragResponse =
+    await this.ragService.generate({
+      question:
+        request.message,
+
+      history,
+
+      topK:
+        DEFAULT_TOP_K,
+    });
+
+  /*
+   * 5. Save assistant message.
+   */
+  const assistantMessage =
+    await this.chatRepository
+      .createMessage({
+        sessionId:
+          request.chatId,
+
+        role:
+          "ASSISTANT",
+
+        content:
+          ragResponse.answer,
       });
 
-    // 5. Persist assistant message
-    const assistantMessage =
-      await this.chatRepository.createMessage({
-        sessionId: request.chatId,
-        role: "ASSISTANT",
-        content: ragResponse.answer,
-      });
-
-    // 6. Persist citations
-    await this.chatRepository.createCitations(
-      assistantMessage.id,
-      ragResponse.citations
-    );
-
-    // 7. Return response
-    return {
-      answer: ragResponse.answer,
-      citations: ragResponse.citations,
-    };
-  }
-
-  async getConversation(
-    chatId: string,
-    userId: string
+  /*
+   * 6. Persist citations.
+   */
+  if (
+    ragResponse.citations.length > 0
   ) {
-    await this.getChatById(
-      chatId,
-      userId
-    );
-
-    return this.chatRepository.getConversation(
-      chatId
-    );
+    await this.chatRepository
+      .createCitations(
+        assistantMessage.id,
+        ragResponse.citations
+      );
   }
+
+  /*
+   * 7. Return API response.
+   */
+  return {
+    answer:
+      ragResponse.answer,
+
+    citations:
+      ragResponse.citations,
+  };
+}
 }

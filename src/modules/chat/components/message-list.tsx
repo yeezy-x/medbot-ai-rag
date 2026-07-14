@@ -2,7 +2,7 @@ import { Message } from "../types/chat.types";
 import { MessageItem } from "./message-item";
 
 export function MessageList({
-  messages,
+  messages
 }: {
   messages: Message[];
 }) {

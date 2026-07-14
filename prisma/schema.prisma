@@ -8,6 +8,13 @@ datasource db {
   provider   = "postgresql"
 }
 
+enum IngestionStatus {
+  PENDING
+  PROCESSING
+  COMPLETE
+  FAILED
+}
+
 model User {
   id           String        @id @default(uuid())
   name         String
@@ -63,7 +70,8 @@ model Document {
   version     String
   language    String
   sourceType  String
-  checksum    String?
+  checksum    String? @unique
+  ingestionStatus IngestionStatus @default(PENDING)
   uploadedAt  DateTime @default(now())
   updatedAt   DateTime @updatedAt
   chunks      Chunk[]

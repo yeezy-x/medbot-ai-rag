@@ -47,7 +47,7 @@ export async function GET(
     const { id } =
       await context.params;
 
-    return chatService.getConversation(
+    return chatService.getChatById(
       id,
       user.id
     );

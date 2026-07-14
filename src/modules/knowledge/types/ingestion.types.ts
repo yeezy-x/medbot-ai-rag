@@ -9,6 +9,8 @@ export interface IngestionOptions {
 
 export interface IngestionResult {
   documentId: string;
+  status:"INGESTED" | "SKIPPED";
+  reason?:"DOCUMENT_ALREADY_INGESTED";
   chunkCount: number;
   embeddingCount: number;
   inserted: number;
