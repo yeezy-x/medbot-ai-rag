@@ -22,7 +22,7 @@ export function ChatList({ chats }: ChatListProps) {
   return (
     <div className="space-y-1">
       {chats.map((chat) => (
-        <ChatItem key={chat.id} id={chat.id} title={chat.title} />
+        <ChatItem key={chat.id}  id={chat.id} title={chat.title} />
       ))}
     </div>
   );

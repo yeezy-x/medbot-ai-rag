@@ -115,8 +115,8 @@ export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeo
 export const CitationScalarFieldEnum = {
   id: 'id',
   pageNumber: 'pageNumber',
-  chunkId: 'chunkId',
   sourceTitle: 'sourceTitle',
+  chunkId: 'chunkId',
   messageId: 'messageId'
 } as const
 
@@ -126,9 +126,13 @@ export type CitationScalarFieldEnum = (typeof CitationScalarFieldEnum)[keyof typ
 export const DocumentScalarFieldEnum = {
   id: 'id',
   title: 'title',
+  fileName: 'fileName',
   version: 'version',
-  source: 'source',
-  uploadedAt: 'uploadedAt'
+  language: 'language',
+  sourceType: 'sourceType',
+  checksum: 'checksum',
+  uploadedAt: 'uploadedAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type DocumentScalarFieldEnum = (typeof DocumentScalarFieldEnum)[keyof typeof DocumentScalarFieldEnum]
@@ -138,10 +142,17 @@ export const ChunkScalarFieldEnum = {
   id: 'id',
   documentId: 'documentId',
   chunkIndex: 'chunkIndex',
-  pageNumber: 'pageNumber',
   content: 'content',
-  metadata: 'metadata',
-  createdAt: 'createdAt'
+  characterCount: 'characterCount',
+  estimatedTokens: 'estimatedTokens',
+  startOffset: 'startOffset',
+  endOffset: 'endOffset',
+  pageNumber: 'pageNumber',
+  chapter: 'chapter',
+  section: 'section',
+  headings: 'headings',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 } as const
 
 export type ChunkScalarFieldEnum = (typeof ChunkScalarFieldEnum)[keyof typeof ChunkScalarFieldEnum]
@@ -208,6 +219,14 @@ export const QueryMode = {
 export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
 
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
 export const JsonNullValueFilter = {
   DbNull: DbNull,
   JsonNull: JsonNull,
@@ -215,12 +234,4 @@ export const JsonNullValueFilter = {
 } as const
 
 export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
-
-
-export const NullsOrder = {
-  first: 'first',
-  last: 'last'
-} as const
-
-export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
 

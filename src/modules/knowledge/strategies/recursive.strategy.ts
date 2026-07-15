@@ -1,8 +1,7 @@
 // src/modules/knowledge/strategies/recursive.strategy.ts
 import { CHUNKING } from "../constants/chunking.constants";
 import { NormalizationService } from "../services/normalization.service";
-import { ChunkBuilderState } from "../types/chunking.types";
-import { Chunk } from "../types/chunk.types";
+import { Chunk, ChunkBuilderState } from "../types/chunk.types";
 import { ChunkingStrategy } from "./chunking.strategy";
 
 export class RecursiveChunkingStrategy

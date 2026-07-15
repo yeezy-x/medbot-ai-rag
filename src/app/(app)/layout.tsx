@@ -7,11 +7,10 @@ export default async function AppLayout({
 }: {
   children: ReactNode;
 }) {
-  await requireUser();
+  const user=await requireUser();
 
   return (
     <div className="h-screen flex flex-col">
-
       <main className="flex-1 overflow-hidden">
         {children}
       </main>

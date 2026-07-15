@@ -1,3 +1,4 @@
+import { env } from "@/config/env";
 import { PrismaClient } from "@/generated/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 
@@ -5,7 +6,7 @@ const globalForPrisma = globalThis as unknown as {
    prisma: PrismaClient | undefined;
 };
 
-const connectionString = process.env.DATABASE_URL;
+const connectionString = env.DATABASE_URL;
 
 if (!connectionString) {
   throw new Error(

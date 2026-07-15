@@ -1,0 +1,4 @@
+export const MAX_CONTEXT_TOKENS = 6_000;
+
+export const MAX_CONTEXT_CHARACTERS =
+  MAX_CONTEXT_TOKENS * 4;

@@ -37,24 +37,24 @@ export type CitationSumAggregateOutputType = {
 export type CitationMinAggregateOutputType = {
   id: string | null
   pageNumber: number | null
-  chunkId: string | null
   sourceTitle: string | null
+  chunkId: string | null
   messageId: string | null
 }
 
 export type CitationMaxAggregateOutputType = {
   id: string | null
   pageNumber: number | null
-  chunkId: string | null
   sourceTitle: string | null
+  chunkId: string | null
   messageId: string | null
 }
 
 export type CitationCountAggregateOutputType = {
   id: number
   pageNumber: number
-  chunkId: number
   sourceTitle: number
+  chunkId: number
   messageId: number
   _all: number
 }
@@ -71,24 +71,24 @@ export type CitationSumAggregateInputType = {
 export type CitationMinAggregateInputType = {
   id?: true
   pageNumber?: true
-  chunkId?: true
   sourceTitle?: true
+  chunkId?: true
   messageId?: true
 }
 
 export type CitationMaxAggregateInputType = {
   id?: true
   pageNumber?: true
-  chunkId?: true
   sourceTitle?: true
+  chunkId?: true
   messageId?: true
 }
 
 export type CitationCountAggregateInputType = {
   id?: true
   pageNumber?: true
-  chunkId?: true
   sourceTitle?: true
+  chunkId?: true
   messageId?: true
   _all?: true
 }
@@ -182,8 +182,8 @@ export type CitationGroupByArgs<ExtArgs extends runtime.Types.Extensions.Interna
 export type CitationGroupByOutputType = {
   id: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
+  chunkId: string
   messageId: string
   _count: CitationCountAggregateOutputType | null
   _avg: CitationAvgAggregateOutputType | null
@@ -213,19 +213,21 @@ export type CitationWhereInput = {
   NOT?: Prisma.CitationWhereInput | Prisma.CitationWhereInput[]
   id?: Prisma.StringFilter<"Citation"> | string
   pageNumber?: Prisma.IntFilter<"Citation"> | number
-  chunkId?: Prisma.StringFilter<"Citation"> | string
   sourceTitle?: Prisma.StringFilter<"Citation"> | string
+  chunkId?: Prisma.StringFilter<"Citation"> | string
   messageId?: Prisma.StringFilter<"Citation"> | string
   message?: Prisma.XOR<Prisma.MessageScalarRelationFilter, Prisma.MessageWhereInput>
+  chunk?: Prisma.XOR<Prisma.ChunkScalarRelationFilter, Prisma.ChunkWhereInput>
 }
 
 export type CitationOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   pageNumber?: Prisma.SortOrder
-  chunkId?: Prisma.SortOrder
   sourceTitle?: Prisma.SortOrder
+  chunkId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
   message?: Prisma.MessageOrderByWithRelationInput
+  chunk?: Prisma.ChunkOrderByWithRelationInput
 }
 
 export type CitationWhereUniqueInput = Prisma.AtLeast<{
@@ -234,17 +236,18 @@ export type CitationWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.CitationWhereInput[]
   NOT?: Prisma.CitationWhereInput | Prisma.CitationWhereInput[]
   pageNumber?: Prisma.IntFilter<"Citation"> | number
-  chunkId?: Prisma.StringFilter<"Citation"> | string
   sourceTitle?: Prisma.StringFilter<"Citation"> | string
+  chunkId?: Prisma.StringFilter<"Citation"> | string
   messageId?: Prisma.StringFilter<"Citation"> | string
   message?: Prisma.XOR<Prisma.MessageScalarRelationFilter, Prisma.MessageWhereInput>
+  chunk?: Prisma.XOR<Prisma.ChunkScalarRelationFilter, Prisma.ChunkWhereInput>
 }, "id">
 
 export type CitationOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   pageNumber?: Prisma.SortOrder
-  chunkId?: Prisma.SortOrder
   sourceTitle?: Prisma.SortOrder
+  chunkId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
   _count?: Prisma.CitationCountOrderByAggregateInput
   _avg?: Prisma.CitationAvgOrderByAggregateInput
@@ -259,63 +262,62 @@ export type CitationScalarWhereWithAggregatesInput = {
   NOT?: Prisma.CitationScalarWhereWithAggregatesInput | Prisma.CitationScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Citation"> | string
   pageNumber?: Prisma.IntWithAggregatesFilter<"Citation"> | number
-  chunkId?: Prisma.StringWithAggregatesFilter<"Citation"> | string
   sourceTitle?: Prisma.StringWithAggregatesFilter<"Citation"> | string
+  chunkId?: Prisma.StringWithAggregatesFilter<"Citation"> | string
   messageId?: Prisma.StringWithAggregatesFilter<"Citation"> | string
 }
 
 export type CitationCreateInput = {
   id?: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
   message: Prisma.MessageCreateNestedOneWithoutCitationsInput
+  chunk: Prisma.ChunkCreateNestedOneWithoutCitationsInput
 }
 
 export type CitationUncheckedCreateInput = {
   id?: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
+  chunkId: string
   messageId: string
 }
 
 export type CitationUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
   message?: Prisma.MessageUpdateOneRequiredWithoutCitationsNestedInput
+  chunk?: Prisma.ChunkUpdateOneRequiredWithoutCitationsNestedInput
 }
 
 export type CitationUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   messageId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type CitationCreateManyInput = {
   id?: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
+  chunkId: string
   messageId: string
 }
 
 export type CitationUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type CitationUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   messageId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
@@ -332,8 +334,8 @@ export type CitationOrderByRelationAggregateInput = {
 export type CitationCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   pageNumber?: Prisma.SortOrder
-  chunkId?: Prisma.SortOrder
   sourceTitle?: Prisma.SortOrder
+  chunkId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
 }
 
@@ -344,16 +346,16 @@ export type CitationAvgOrderByAggregateInput = {
 export type CitationMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   pageNumber?: Prisma.SortOrder
-  chunkId?: Prisma.SortOrder
   sourceTitle?: Prisma.SortOrder
+  chunkId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
 }
 
 export type CitationMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   pageNumber?: Prisma.SortOrder
-  chunkId?: Prisma.SortOrder
   sourceTitle?: Prisma.SortOrder
+  chunkId?: Prisma.SortOrder
   messageId?: Prisma.SortOrder
 }
 
@@ -411,18 +413,60 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
+export type CitationCreateNestedManyWithoutChunkInput = {
+  create?: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput> | Prisma.CitationCreateWithoutChunkInput[] | Prisma.CitationUncheckedCreateWithoutChunkInput[]
+  connectOrCreate?: Prisma.CitationCreateOrConnectWithoutChunkInput | Prisma.CitationCreateOrConnectWithoutChunkInput[]
+  createMany?: Prisma.CitationCreateManyChunkInputEnvelope
+  connect?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+}
+
+export type CitationUncheckedCreateNestedManyWithoutChunkInput = {
+  create?: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput> | Prisma.CitationCreateWithoutChunkInput[] | Prisma.CitationUncheckedCreateWithoutChunkInput[]
+  connectOrCreate?: Prisma.CitationCreateOrConnectWithoutChunkInput | Prisma.CitationCreateOrConnectWithoutChunkInput[]
+  createMany?: Prisma.CitationCreateManyChunkInputEnvelope
+  connect?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+}
+
+export type CitationUpdateManyWithoutChunkNestedInput = {
+  create?: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput> | Prisma.CitationCreateWithoutChunkInput[] | Prisma.CitationUncheckedCreateWithoutChunkInput[]
+  connectOrCreate?: Prisma.CitationCreateOrConnectWithoutChunkInput | Prisma.CitationCreateOrConnectWithoutChunkInput[]
+  upsert?: Prisma.CitationUpsertWithWhereUniqueWithoutChunkInput | Prisma.CitationUpsertWithWhereUniqueWithoutChunkInput[]
+  createMany?: Prisma.CitationCreateManyChunkInputEnvelope
+  set?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  disconnect?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  delete?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  connect?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  update?: Prisma.CitationUpdateWithWhereUniqueWithoutChunkInput | Prisma.CitationUpdateWithWhereUniqueWithoutChunkInput[]
+  updateMany?: Prisma.CitationUpdateManyWithWhereWithoutChunkInput | Prisma.CitationUpdateManyWithWhereWithoutChunkInput[]
+  deleteMany?: Prisma.CitationScalarWhereInput | Prisma.CitationScalarWhereInput[]
+}
+
+export type CitationUncheckedUpdateManyWithoutChunkNestedInput = {
+  create?: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput> | Prisma.CitationCreateWithoutChunkInput[] | Prisma.CitationUncheckedCreateWithoutChunkInput[]
+  connectOrCreate?: Prisma.CitationCreateOrConnectWithoutChunkInput | Prisma.CitationCreateOrConnectWithoutChunkInput[]
+  upsert?: Prisma.CitationUpsertWithWhereUniqueWithoutChunkInput | Prisma.CitationUpsertWithWhereUniqueWithoutChunkInput[]
+  createMany?: Prisma.CitationCreateManyChunkInputEnvelope
+  set?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  disconnect?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  delete?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  connect?: Prisma.CitationWhereUniqueInput | Prisma.CitationWhereUniqueInput[]
+  update?: Prisma.CitationUpdateWithWhereUniqueWithoutChunkInput | Prisma.CitationUpdateWithWhereUniqueWithoutChunkInput[]
+  updateMany?: Prisma.CitationUpdateManyWithWhereWithoutChunkInput | Prisma.CitationUpdateManyWithWhereWithoutChunkInput[]
+  deleteMany?: Prisma.CitationScalarWhereInput | Prisma.CitationScalarWhereInput[]
+}
+
 export type CitationCreateWithoutMessageInput = {
   id?: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
+  chunk: Prisma.ChunkCreateNestedOneWithoutCitationsInput
 }
 
 export type CitationUncheckedCreateWithoutMessageInput = {
   id?: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
+  chunkId: string
 }
 
 export type CitationCreateOrConnectWithoutMessageInput = {
@@ -457,37 +501,105 @@ export type CitationScalarWhereInput = {
   NOT?: Prisma.CitationScalarWhereInput | Prisma.CitationScalarWhereInput[]
   id?: Prisma.StringFilter<"Citation"> | string
   pageNumber?: Prisma.IntFilter<"Citation"> | number
-  chunkId?: Prisma.StringFilter<"Citation"> | string
   sourceTitle?: Prisma.StringFilter<"Citation"> | string
+  chunkId?: Prisma.StringFilter<"Citation"> | string
   messageId?: Prisma.StringFilter<"Citation"> | string
+}
+
+export type CitationCreateWithoutChunkInput = {
+  id?: string
+  pageNumber: number
+  sourceTitle: string
+  message: Prisma.MessageCreateNestedOneWithoutCitationsInput
+}
+
+export type CitationUncheckedCreateWithoutChunkInput = {
+  id?: string
+  pageNumber: number
+  sourceTitle: string
+  messageId: string
+}
+
+export type CitationCreateOrConnectWithoutChunkInput = {
+  where: Prisma.CitationWhereUniqueInput
+  create: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput>
+}
+
+export type CitationCreateManyChunkInputEnvelope = {
+  data: Prisma.CitationCreateManyChunkInput | Prisma.CitationCreateManyChunkInput[]
+  skipDuplicates?: boolean
+}
+
+export type CitationUpsertWithWhereUniqueWithoutChunkInput = {
+  where: Prisma.CitationWhereUniqueInput
+  update: Prisma.XOR<Prisma.CitationUpdateWithoutChunkInput, Prisma.CitationUncheckedUpdateWithoutChunkInput>
+  create: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput>
+}
+
+export type CitationUpdateWithWhereUniqueWithoutChunkInput = {
+  where: Prisma.CitationWhereUniqueInput
+  data: Prisma.XOR<Prisma.CitationUpdateWithoutChunkInput, Prisma.CitationUncheckedUpdateWithoutChunkInput>
+}
+
+export type CitationUpdateManyWithWhereWithoutChunkInput = {
+  where: Prisma.CitationScalarWhereInput
+  data: Prisma.XOR<Prisma.CitationUpdateManyMutationInput, Prisma.CitationUncheckedUpdateManyWithoutChunkInput>
 }
 
 export type CitationCreateManyMessageInput = {
   id?: string
   pageNumber: number
-  chunkId: string
   sourceTitle: string
+  chunkId: string
 }
 
 export type CitationUpdateWithoutMessageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  chunk?: Prisma.ChunkUpdateOneRequiredWithoutCitationsNestedInput
 }
 
 export type CitationUncheckedUpdateWithoutMessageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type CitationUncheckedUpdateManyWithoutMessageInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
-  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
   sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  chunkId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type CitationCreateManyChunkInput = {
+  id?: string
+  pageNumber: number
+  sourceTitle: string
+  messageId: string
+}
+
+export type CitationUpdateWithoutChunkInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  message?: Prisma.MessageUpdateOneRequiredWithoutCitationsNestedInput
+}
+
+export type CitationUncheckedUpdateWithoutChunkInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  messageId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type CitationUncheckedUpdateManyWithoutChunkInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  pageNumber?: Prisma.IntFieldUpdateOperationsInput | number
+  sourceTitle?: Prisma.StringFieldUpdateOperationsInput | string
+  messageId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 
@@ -495,59 +607,66 @@ export type CitationUncheckedUpdateManyWithoutMessageInput = {
 export type CitationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   pageNumber?: boolean
-  chunkId?: boolean
   sourceTitle?: boolean
+  chunkId?: boolean
   messageId?: boolean
   message?: boolean | Prisma.MessageDefaultArgs<ExtArgs>
+  chunk?: boolean | Prisma.ChunkDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["citation"]>
 
 export type CitationSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   pageNumber?: boolean
-  chunkId?: boolean
   sourceTitle?: boolean
+  chunkId?: boolean
   messageId?: boolean
   message?: boolean | Prisma.MessageDefaultArgs<ExtArgs>
+  chunk?: boolean | Prisma.ChunkDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["citation"]>
 
 export type CitationSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   pageNumber?: boolean
-  chunkId?: boolean
   sourceTitle?: boolean
+  chunkId?: boolean
   messageId?: boolean
   message?: boolean | Prisma.MessageDefaultArgs<ExtArgs>
+  chunk?: boolean | Prisma.ChunkDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["citation"]>
 
 export type CitationSelectScalar = {
   id?: boolean
   pageNumber?: boolean
-  chunkId?: boolean
   sourceTitle?: boolean
+  chunkId?: boolean
   messageId?: boolean
 }
 
-export type CitationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "pageNumber" | "chunkId" | "sourceTitle" | "messageId", ExtArgs["result"]["citation"]>
+export type CitationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "pageNumber" | "sourceTitle" | "chunkId" | "messageId", ExtArgs["result"]["citation"]>
 export type CitationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   message?: boolean | Prisma.MessageDefaultArgs<ExtArgs>
+  chunk?: boolean | Prisma.ChunkDefaultArgs<ExtArgs>
 }
 export type CitationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   message?: boolean | Prisma.MessageDefaultArgs<ExtArgs>
+  chunk?: boolean | Prisma.ChunkDefaultArgs<ExtArgs>
 }
 export type CitationIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   message?: boolean | Prisma.MessageDefaultArgs<ExtArgs>
+  chunk?: boolean | Prisma.ChunkDefaultArgs<ExtArgs>
 }
 
 export type $CitationPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Citation"
   objects: {
     message: Prisma.$MessagePayload<ExtArgs>
+    chunk: Prisma.$ChunkPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     pageNumber: number
-    chunkId: string
     sourceTitle: string
+    chunkId: string
     messageId: string
   }, ExtArgs["result"]["citation"]>
   composites: {}
@@ -944,6 +1063,7 @@ readonly fields: CitationFieldRefs;
 export interface Prisma__CitationClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   message<T extends Prisma.MessageDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.MessageDefaultArgs<ExtArgs>>): Prisma.Prisma__MessageClient<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  chunk<T extends Prisma.ChunkDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ChunkDefaultArgs<ExtArgs>>): Prisma.Prisma__ChunkClient<runtime.Types.Result.GetResult<Prisma.$ChunkPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -975,8 +1095,8 @@ export interface Prisma__CitationClient<T, Null = never, ExtArgs extends runtime
 export interface CitationFieldRefs {
   readonly id: Prisma.FieldRef<"Citation", 'String'>
   readonly pageNumber: Prisma.FieldRef<"Citation", 'Int'>
-  readonly chunkId: Prisma.FieldRef<"Citation", 'String'>
   readonly sourceTitle: Prisma.FieldRef<"Citation", 'String'>
+  readonly chunkId: Prisma.FieldRef<"Citation", 'String'>
   readonly messageId: Prisma.FieldRef<"Citation", 'String'>
 }
     

@@ -4,5 +4,15 @@ export interface Chunk {
   characterCount: number;
   estimatedTokens: number;
   startOffset:number,
-  endOffset:number
+  endOffset:number,
+  pageNumber?: number;
+}
+
+export interface ChunkBuilderState {
+  chunks: Chunk[];
+  currentParts: string[];
+  currentLength: number;
+  chunkIndex: number;
+  currentStartOffset: number;
+  processedCharacters: number;
 }
