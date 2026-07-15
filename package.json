@@ -11,7 +11,8 @@
     "ingest": "tsx -r dotenv/config src/modules/knowledge/scripts/ingest-pdf.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "evaluate:retrieval": "tsx -r dotenv/config src/modules/knowledge/scripts/evaluate-retrieval.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",

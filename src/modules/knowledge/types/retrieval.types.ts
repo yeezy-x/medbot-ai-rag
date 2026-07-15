@@ -29,7 +29,7 @@ export interface CitationReference {
 export interface RetrievalRequest {
   query: string;
   topK: number;
-  minScore?: number;
+  minScore?: number|null;
   filters?: {
     documentId?: string;
     chapter?: string;

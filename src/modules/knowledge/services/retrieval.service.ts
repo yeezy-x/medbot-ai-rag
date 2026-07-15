@@ -9,6 +9,7 @@ import {
   RetrievedChunk,
 } from "../types/retrieval.types";
 import { KnowledgeChunk } from "../types/metadata.types";
+import { DEFAULT_MIN_SIMILARITY_SCORE } from "../constants/retrieval.constants";
 
 export class RetrievalService {
   constructor(
@@ -33,19 +34,48 @@ export class RetrievalService {
     await this.vectorService.search({
       embedding: embeddingResponse.embedding,
       topK: request.topK,
-      minScore: request.minScore,
       filter: request.filters,
     });
+
+    const minScore =
+  request.minScore === null
+    ? null
+    : request.minScore ??
+      DEFAULT_MIN_SIMILARITY_SCORE;
+
+const acceptedResults =
+  minScore === null
+    ? searchResults
+    : searchResults.filter(
+        (result) =>
+          result.score >= minScore
+      );
     // --- ADD THIS LOG ---
   console.log(`[RAG FLOW] Retrieved ${searchResults.length} chunks for query: "${request.query}"`);
   searchResults.forEach((res, i) => {
     console.log(`  Chunk ${i+1} (Score: ${res.score.toFixed(4)}): ${res.chunk.content.substring(0, 50)}...`);
   });
+  console.log(
+  "[RETRIEVAL] Similarity filtering:",
+  {
+    retrieved:
+      searchResults.length,
+
+    accepted:
+      acceptedResults.length,
+
+    rejected:
+      searchResults.length -
+      acceptedResults.length,
+
+    minScore,
+  }
+);
   // --------------------
   // 3. Convert vector results into retrieval results
   const chunks =
     this.mapRetrievedChunks(
-      searchResults
+      acceptedResults
     );
   console.log("Retrieved chunks:");
   console.log(searchResults);
