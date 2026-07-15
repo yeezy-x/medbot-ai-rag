@@ -26,6 +26,17 @@ export class ChatRepository extends BaseRepository {
       },
     });
   }
+  async findByIdAndUserId(
+    id:string,
+    userId:string
+  ){
+    return this.db.chatSession.findFirst({
+      where:{
+        id,
+        userId
+      }
+    })
+  }
 
   async updateTitle(id: string,title: string) {
     return this.db.chatSession.update({

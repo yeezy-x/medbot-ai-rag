@@ -1,0 +1,13 @@
+export const EVENTS = {
+  USER_REGISTERED:
+    "USER_REGISTERED",
+
+  USER_LOGGED_IN:
+    "USER_LOGGED_IN",
+
+  CHAT_CREATED:
+    "CHAT_CREATED",
+
+  MESSAGE_CREATED:
+    "MESSAGE_CREATED",
+} as const;

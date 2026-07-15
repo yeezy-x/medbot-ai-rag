@@ -1,12 +1,8 @@
-import { MessageRole }
-from "@prisma/client";
+// src/repositories/message.repository.ts
+import { MessageRole } from "@/generated/enums";
+import { BaseRepository } from "./base.repository";
 
-import { BaseRepository }
-from "./base.repository";
-
-export class MessageRepository
-extends BaseRepository {
-
+export class MessageRepository extends BaseRepository {
   async create(data: {
     role: MessageRole;
     content: string;
@@ -17,14 +13,11 @@ extends BaseRepository {
     });
   }
 
-  async findBySessionId(
-    sessionId: string
-  ) {
+  async findBySessionId(sessionId: string) {
     return this.db.message.findMany({
       where: {
         sessionId,
       },
-
       orderBy: {
         createdAt: "asc",
       },

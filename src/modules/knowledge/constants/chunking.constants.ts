@@ -1,0 +1,5 @@
+export const CHUNKING = {
+  MAX_CHUNK_SIZE: 1000,
+  OVERLAP_SIZE: 200,
+  APPROX_CHARS_PER_TOKEN: 4,
+} as const;

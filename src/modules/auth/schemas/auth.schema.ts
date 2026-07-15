@@ -13,7 +13,17 @@ export const registerSchema =
       .max(100),
   });
 
-export type RegisterInput =
-  z.infer<
-    typeof registerSchema
-  >;
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .email()
+    .toLowerCase(),
+
+  password: z
+    .string()
+    .min(8)
+    .max(100),
+});
+
+export type RegisterInput=z.infer<typeof registerSchema>;
+export type loginSchema=z.infer<typeof loginSchema>
