@@ -292,14 +292,54 @@ export class PostgresVectorProvider
 
     const minScore = request.minScore ?? DEFAULT_MIN_SIMILARITY_SCORE
 
+    const conditions: Prisma.Sql[] = [
+  Prisma.sql`c.embedding IS NOT NULL`,
+];
+
+const filters = request.filter;
+
+if (filters?.documentId) {
+  conditions.push(
+    Prisma.sql`
+      c."documentId" = ${filters.documentId}
+    `
+  );
+}
+
+if (filters?.chapter) {
+  conditions.push(
+    Prisma.sql`
+      c.chapter = ${filters.chapter}
+    `
+  );
+}
+
+if (filters?.section) {
+  conditions.push(
+    Prisma.sql`
+      c.section = ${filters.section}
+    `
+  );
+}
+
+const whereClause = Prisma.sql`
+  WHERE ${Prisma.join(
+    conditions,
+    " AND "
+  )}
+`;
     const rows =
   await this.db.$queryRaw<
     ChunkSearchRow[]
   >(
     Prisma.sql`
+
       SELECT *
+
       FROM (
+
         SELECT
+
           c.id,
           c."documentId",
           c."chunkIndex",
@@ -312,41 +352,42 @@ export class PostgresVectorProvider
           c.chapter,
           c.section,
           c.headings,
-
           d.title,
           d.version,
           d.language,
           d."sourceType",
-
           1 - (
             c.embedding <=>
             CAST(${vector} AS vector)
           ) AS score
-
         FROM "Chunk" c
-
         JOIN "Document" d
           ON c."documentId" = d.id
-
-        WHERE
-          c.embedding IS NOT NULL
-      ) AS ranked_chunks
-
+        ${whereClause}
+      ) ranked_chunks
       WHERE score >= ${minScore}
-
       ORDER BY score DESC
-
-      LIMIT ${request.topK}
-    `
+      LIMIT ${request.topK}`
   );
-
     console.log(
       "\n========== VECTOR SEARCH =========="
     );
 
     console.log({
       requestedTopK: request.topK,
+
       returnedRows: rows.length,
+
+      filters: {
+        documentId:
+          filters?.documentId ?? null,
+
+        chapter:
+          filters?.chapter ?? null,
+
+        section:
+          filters?.section ?? null,
+      },
     });
 
     return rows.map((row) => {

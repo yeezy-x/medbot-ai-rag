@@ -9,7 +9,7 @@ import {
   RetrievedChunk,
 } from "../types/retrieval.types";
 import { KnowledgeChunk } from "../types/metadata.types";
-import { DEFAULT_MIN_SIMILARITY_SCORE } from "../constants/retrieval.constants";
+import { DEFAULT_CANDIDATE_POOL_SIZE, DEFAULT_MIN_SIMILARITY_SCORE } from "../constants/retrieval.constants";
 
 export class RetrievalService {
   constructor(
@@ -22,60 +22,56 @@ export class RetrievalService {
   ) {}
 
   async retrieve(request: RetrievalRequest): Promise<RetrievalResult> {
-  const startedAt = Date.now();
+    const startedAt = Date.now();
   // 1. Generate embedding for the user's query
-  const embeddingResponse = await this.embeddingService.embedChunk({
+    const embeddingResponse = await this.embeddingService.embedChunk({
       id:"query-temp-id",
       content: request.query,
     }as unknown as KnowledgeChunk) ;
 
+
+    const candidatePoolSize=request.candidatePoolSize ?? DEFAULT_CANDIDATE_POOL_SIZE;
   // 2. Perform vector similarity search
   const searchResults =
     await this.vectorService.search({
       embedding: embeddingResponse.embedding,
-      topK: request.topK,
+      topK: candidatePoolSize,
       filter: request.filters,
     });
 
-    const minScore =
-  request.minScore === null
-    ? null
-    : request.minScore ??
-      DEFAULT_MIN_SIMILARITY_SCORE;
+    const minScore = request.minScore === null ? null : request.minScore ?? DEFAULT_MIN_SIMILARITY_SCORE;
 
-const acceptedResults =
-  minScore === null
-    ? searchResults
-    : searchResults.filter(
-        (result) =>
-          result.score >= minScore
-      );
+    const acceptedResults =
+      minScore === null
+        ? searchResults
+        : searchResults.filter(
+            (result) =>
+              result.score >= minScore
+        );
+
+      const finalResults=acceptedResults.slice(0,request.topK);
     // --- ADD THIS LOG ---
-  console.log(`[RAG FLOW] Retrieved ${searchResults.length} chunks for query: "${request.query}"`);
-  searchResults.forEach((res, i) => {
-    console.log(`  Chunk ${i+1} (Score: ${res.score.toFixed(4)}): ${res.chunk.content.substring(0, 50)}...`);
-  });
-  console.log(
-  "[RETRIEVAL] Similarity filtering:",
-  {
-    retrieved:
-      searchResults.length,
+      console.log(`[RAG FLOW] Retrieved ${searchResults.length} chunks for query: "${request.query}"`);
+      searchResults.forEach((res, i) => {
+        console.log(`  Chunk ${i+1} (Score: ${res.score.toFixed(4)}): ${res.chunk.content.substring(0, 50)}...`);
+      });
+      console.log(
+      "\n========== RETRIEVAL =========="
+    );
 
-    accepted:
-      acceptedResults.length,
-
-    rejected:
-      searchResults.length -
-      acceptedResults.length,
-
-    minScore,
-  }
-);
+    console.log({
+      question:request.query,
+      candidatePoolSize,
+      retrieved:searchResults.length,
+      accepted:acceptedResults.length,
+      returned:finalResults.length,
+      minScore,
+    });
   // --------------------
   // 3. Convert vector results into retrieval results
   const chunks =
     this.mapRetrievedChunks(
-      acceptedResults
+      finalResults
     );
   console.log("Retrieved chunks:");
   console.log(searchResults);
@@ -162,23 +158,17 @@ const acceptedResults =
   );
 }
 
-  private buildCitations(
-  chunks: RetrievedChunk[]
-): CitationReference[] {
+  private buildCitations(chunks: RetrievedChunk[]): CitationReference[] {
   return chunks.map((chunk) => {
     if (!chunk.id) {
-      throw new Error(
-        "Cannot build citation: chunk is missing id."
-      );
+      throw new Error("Cannot build citation: chunk is missing id.");
     }
-
     if (!chunk.documentId) {
       throw new Error(
         `Cannot build citation for chunk ${chunk.id}: ` +
         `documentId is missing.`
       );
     }
-
     if (chunk.pageNumber === undefined) {
       throw new Error(
         `Cannot build citation for chunk ${chunk.id}: ` +

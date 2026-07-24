@@ -1,5 +1,4 @@
 // src/modules/knowledge/types/retrieval.types.ts
-
 import { SourceType } from "./metadata.types";
 
 export interface RetrievedChunk {
@@ -26,15 +25,27 @@ export interface CitationReference {
   sourceTitle: string;
 }
 
+export interface RetrievalFilters {
+  documentId?: string;
+
+  chapter?: string;
+
+  section?: string;
+
+  pageNumber?: number;
+
+  sourceType?: SourceType;
+
+  language?: string;
+
+  version?: string;
+}
 export interface RetrievalRequest {
   query: string;
   topK: number;
+  candidatePoolSize: number;
   minScore?: number|null;
-  filters?: {
-    documentId?: string;
-    chapter?: string;
-    section?: string;
-  };
+  filters?: RetrievalFilters;
 }
 
 export interface RetrievalResult {

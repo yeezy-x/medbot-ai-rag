@@ -1,9 +1,6 @@
-import { BaseRepository }
-from "./base.repository";
+import { BaseRepository } from "./base.repository";
 
-export class CitationRepository
-extends BaseRepository {
-
+export class CitationRepository extends BaseRepository {
   async createMany(
     citations: {
       pageNumber: number;

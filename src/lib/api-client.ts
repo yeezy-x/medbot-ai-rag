@@ -11,8 +11,7 @@ export async function apiClient<T>(
   let data;
 
   try {
-    data =
-      await response.json();
+    data = await response.json();
   } catch {
     throw new Error(
       "Invalid response"

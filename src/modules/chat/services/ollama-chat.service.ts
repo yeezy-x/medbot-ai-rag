@@ -1,82 +1,138 @@
-import { OllamaChatRequest, OllamaChatResponse } from "../types/ollama.types";
+import type {
+  OllamaChatRequest,
+  OllamaChatResponse,
+} from "../types/ollama.types";
 
 /**
  * OllamaChatService
- * 
- * Serves as the isolation boundary between the MedBot Next.js backend and the 
- * local Ollama AI engine. It handles HTTP requests to Ollama, payload formatting, 
- * and strict error boundary isolation so network failures do not corrupt the database.
+ *
+ * Isolation boundary between the MedBot Next.js backend and the local Ollama
+ * inference server. Supports both single-shot generation (`generate`) and
+ * token streaming (`generateStream`). Network failures are trapped so the
+ * caller (ChatService) can decide how to persist partial results.
  */
 export class OllamaChatService {
   constructor(
-    // 1. Configuration: Defaults to standard local Ollama port. 
-    // In a production environment, this should ideally be injected via environment variables.
-    private readonly baseUrl = "http://localhost:11434"
+    private readonly baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434"
   ) {}
 
   /**
-   * Generates a response using Ollama's native `/api/generate` endpoint.
-   * 
-   * @param request - The typed request object (typically contains `model`, `prompt`, and `stream`).
-   * @returns The parsed and typed response from the LLM.
+   * Single-shot generation. Kept for compatibility with the non-streaming
+   * endpoint at `POST /api/chats/[id]/messages`.
    */
-  async generate(
-    request: OllamaChatRequest
-  ): Promise<OllamaChatResponse> {
-    // 2. Delegation: Passes the endpoint and strict typings to the reusable 'post' method.
-    return this.post<OllamaChatResponse>(
-      "/api/generate",
-      request
-    );
+  async generate(request: OllamaChatRequest): Promise<OllamaChatResponse> {
+    return this.post<OllamaChatResponse>("/api/generate", {
+      ...request,
+      stream: false,
+    });
   }
 
   /**
-   * Internal utility to handle the HTTP POST boundary to the local LLM.
-   * 
-   * @param endpoint - The specific Ollama API path (e.g., "/api/generate").
-   * @param body - The payload to serialize and send.
+   * Streaming generation. Ollama returns newline-delimited JSON where each
+   * frame has `{ response: string, done: boolean, ... }`. We adapt it to a
+   * clean async iterator of `{ delta, done }`.
    */
-  private async post<T>(
-    endpoint: string,
-    body: unknown
-  ): Promise<T> {
-    
-    // 3. Execution: Initiate the HTTP POST request to the local inference engine.
-    const response = await fetch(
-      `${this.baseUrl}${endpoint}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Serialize the TypeScript object into a strict JSON string
-        body: JSON.stringify(body),
-      }
-    );
+  async *generateStream(
+    request: OllamaChatRequest,
+    signal?: AbortSignal
+  ): AsyncGenerator<{ delta: string; done: boolean }, void, unknown> {
+    const response = await fetch(`${this.baseUrl}/api/generate`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...request, stream: true }),
+      signal,
+    });
 
-    // 4. Boundary Error Isolation: Trap non-200 HTTP responses immediately.
-    // This prevents the orchestrator (ChatService) from persisting empty/broken data to PostgreSQL.
-    if (!response.ok) {
-        
-      // Specifically trap 404 errors (the exact issue you were facing previously)
+    if (!response.ok || !response.body) {
       if (response.status === 404) {
-        // Extract the model name from the body if possible for a better error message
-        const modelName = (body as Record<string, unknown>)?.model || 'your-model';
+        const modelName =
+          (request as unknown as { model?: string }).model ?? "your-model";
         throw new Error(
-          `[OllamaChatService] Boundary Error: 404 Not Found.\n` +
-          `Endpoint: ${this.baseUrl}${endpoint}\n` +
-          `Fix: Open your terminal and run 'ollama pull ${modelName}' to ensure the model is downloaded locally.`
+          `[OllamaChatService] 404 Not Found. Run \`ollama pull ${modelName}\` first.`
         );
       }
+      throw new Error(
+        `[OllamaChatService] Stream request failed: ${response.status} ${response.statusText}`
+      );
+    }
 
-      // Generic fallback for other HTTP failures (e.g., 500 Internal Server Error)
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+
+        // NDJSON — split on newlines, keep the trailing partial line in buffer.
+        let newlineIdx: number;
+        while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
+          const line = buffer.slice(0, newlineIdx).trim();
+          buffer = buffer.slice(newlineIdx + 1);
+          if (!line) continue;
+          try {
+            const frame = JSON.parse(line) as {
+              response?: string;
+              done?: boolean;
+            };
+            yield {
+              delta: frame.response ?? "",
+              done: Boolean(frame.done),
+            };
+            if (frame.done) return;
+          } catch {
+            // Ignore malformed line — Ollama sometimes emits an empty final line.
+          }
+        }
+      }
+
+      // Drain any final buffered frame.
+      const tail = buffer.trim();
+      if (tail) {
+        try {
+          const frame = JSON.parse(tail) as {
+            response?: string;
+            done?: boolean;
+          };
+          yield {
+            delta: frame.response ?? "",
+            done: Boolean(frame.done),
+          };
+        } catch {
+          /* ignore */
+        }
+      }
+    } finally {
+      try {
+        reader.releaseLock();
+      } catch {
+        /* noop */
+      }
+    }
+  }
+
+  private async post<T>(endpoint: string, body: unknown): Promise<T> {
+    const response = await fetch(`${this.baseUrl}${endpoint}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        const modelName =
+          (body as Record<string, unknown>)?.model ?? "your-model";
+        throw new Error(
+          `[OllamaChatService] 404 Not Found. Run \`ollama pull ${modelName}\` first.`
+        );
+      }
       throw new Error(
         `[OllamaChatService] Request failed: ${response.status} ${response.statusText}`
       );
     }
 
-    // 5. Resolution: Parse and return the successful JSON response.
-    // This is passed back up to the ChatService for database persistence.
     return response.json() as Promise<T>;
   }
 }

@@ -62,6 +62,8 @@ async function evaluateQuery(
     await retrievalService.retrieve({
       query,
       topK: TOP_K,
+      candidatePoolSize:20,
+      minScore: null,
     });
 
   const context =

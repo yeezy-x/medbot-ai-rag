@@ -27,6 +27,21 @@ export async function GET(
   });
 }
 
+export async function PATCH(
+  request: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  return requestHandler(async () => {
+    const user = await requireUser();
+    const { id } = await context.params;
+    const body = (await request.json()) as { title?: unknown };
+    if (typeof body?.title !== "string") {
+      throw new Error("title (string) is required");
+    }
+    return chatService.renameChat(id, user.id, body.title);
+  });
+}
+
 export async function DELETE(
   request: Request,
   context: {

@@ -1,89 +1,314 @@
-// src/modules/chat/components/chat-sidebar.tsx
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo, useRef, useState, useTransition } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Braces,
+  LogOut,
+  Plus,
+  Search,
+  Sparkles,
+  MessageSquareText,
+} from "lucide-react";
+import { signOut } from "next-auth/react";
+import { toast } from "sonner";
+
 import { Button } from "@/components/ui/button";
-import { ChatList } from "./chat-list";
+import { Input } from "@/components/ui/input";
+import { Kbd } from "@/components/ui/kbd";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { createChat } from "@/modules/chat/api/chat.api";
+import { groupByDate, initials, relativeTime } from "@/lib/format";
+import { useDevMode } from "@/hooks/use-dev-mode";
+import { ChatItemActions } from "./chat-item-actions";
+import { cn } from "@/lib/utils";
 
 interface Chat {
   id: string;
   title: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface SidebarProps {
   initialChats: Chat[];
-  user:{
-    id:string,
-    name?:string | null;
-    email?: string |null
-  }
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  };
 }
 
-export function Sidebar({ initialChats }: SidebarProps) {
+export function Sidebar({ initialChats, user }: SidebarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [chats, setChats] = useState<Chat[]>(initialChats);
-  const [isCreating, setIsCreating] = useState(false);
+  const [query, setQuery] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [creating, setCreating] = useState(false);
+  const [devMode, setDevMode] = useDevMode();
+  // Stash removed chats so we can revert on API failure.
+  const lastDeletedRef = useRef<Map<string, Chat>>(new Map());
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return chats;
+    return chats.filter((c) => c.title.toLowerCase().includes(q));
+  }, [chats, query]);
+
+  const grouped = useMemo(() => groupByDate(filtered), [filtered]);
 
   async function handleNewChat() {
-    setIsCreating(true);
+    setCreating(true);
     try {
-      const result = await createChat("New Conversation");
+      const result = await createChat("New conversation");
       const newChat = result.data;
-      setChats((prev) => [newChat, ...prev]);
-      router.push(`/chat/${newChat.id}`);
-      router.refresh()
+      const serialized: Chat = {
+        id: newChat.id,
+        title: newChat.title,
+        createdAt: new Date(newChat.createdAt).toISOString(),
+        updatedAt: new Date(newChat.updatedAt).toISOString(),
+      };
+      setChats((prev) => [serialized, ...prev]);
+      startTransition(() => {
+        router.push(`/chat/${newChat.id}`);
+        router.refresh();
+      });
     } catch {
-      alert("Failed to create chat.")
+      toast.error("Couldn't start a new conversation");
     } finally {
-      setIsCreating(false);
+      setCreating(false);
     }
   }
 
+  const handleOptimisticRename = (chatId: string, next: string) => {
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, title: next } : c))
+    );
+    startTransition(() => router.refresh());
+  };
+  const handleRevertRename = (chatId: string, previous: string) => {
+    setChats((prev) =>
+      prev.map((c) => (c.id === chatId ? { ...c, title: previous } : c))
+    );
+  };
+  const handleOptimisticDelete = (chatId: string) => {
+    const removed = chats.find((c) => c.id === chatId);
+    setChats((prev) => prev.filter((c) => c.id !== chatId));
+    if (pathname === `/chat/${chatId}`) {
+      startTransition(() => router.push("/chat"));
+    }
+    if (removed) lastDeletedRef.current.set(chatId, removed);
+  };
+  const handleRevertDelete = (chatId: string) => {
+    const previous = lastDeletedRef.current.get(chatId);
+    if (!previous) return;
+    setChats((prev) => [previous, ...prev]);
+    lastDeletedRef.current.delete(chatId);
+  };
+
   return (
-  <aside className="w-72 border-r flex flex-col bg-background">
-    
-    {/* Logo */}
-    <div className="p-4 border-b">
-      <h1 className="font-bold text-xl">
-        MedBot
-      </h1>
+    <aside
+      className="hidden md:flex w-65 shrink-0 flex-col bg-sidebar text-sidebar-foreground"
+      data-testid="chat-sidebar"
+    >
+      {/* Brand */}
+      <div className="flex items-center gap-2 px-4 py-3.5">
+        <div className="flex size-7 items-center justify-center rounded-md bg-brand text-brand-foreground shadow-sm">
+          <Sparkles className="size-4" strokeWidth={2.2} />
+        </div>
+        <div className="flex flex-col leading-tight">
+          <span className="text-[0.85rem] font-semibold tracking-tight">MedBot</span>
+          <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
+            RAG · Gale
+          </span>
+        </div>
+      </div>
 
-      <p className="text-xs text-muted-foreground">
-        Gale Encyclopedia of Medicine
-      </p>
-    </div>
+      {/* New chat */}
+      <div className="px-3">
+        <Button
+          onClick={handleNewChat}
+          disabled={creating || isPending}
+          className="w-full justify-start gap-2 h-9 rounded-lg font-medium"
+          data-testid="sidebar-new-chat-button"
+        >
+          <Plus className="size-4" />
+          <span className="flex-1 text-left">New chat</span>
+          <Kbd className="border-primary-foreground/20 bg-transparent text-primary-foreground/70">⌘</Kbd>
+          <Kbd className="border-primary-foreground/20 bg-transparent text-primary-foreground/70">⏎</Kbd>
+        </Button>
+      </div>
 
-    {/* New Chat */}
-    <div className="p-4 border-b">
-      <Button
-        className="w-full"
-        onClick={handleNewChat}
-        disabled={isCreating}
+      {/* Search */}
+      <div className="relative px-3 pt-3">
+        <Search className="pointer-events-none absolute left-6 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search chats"
+          className="h-8 bg-transparent pl-8 text-[0.8rem] border-border-subtle"
+          data-testid="sidebar-search-input"
+        />
+      </div>
+
+      {/* Groups */}
+      <nav className="flex-1 overflow-y-auto px-2 py-3" aria-label="Recent chats">
+        {grouped.length === 0 ? (
+          <div className="px-3 py-6 text-center text-[0.8rem] text-muted-foreground">
+            {query ? "No matches." : "No conversations yet."}
+          </div>
+        ) : (
+          grouped.map((group) => (
+            <div key={group.label} className="mb-3">
+              <div className="px-2 pb-1 text-[0.65rem] font-semibold uppercase tracking-wider text-muted-foreground">
+                {group.label}
+              </div>
+              <ul className="space-y-0.5">
+                {group.items.map((chat) => (
+                  <ChatSidebarItem
+                    key={chat.id}
+                    chat={chat}
+                    active={pathname === `/chat/${chat.id}`}
+                    onOptimisticRename={handleOptimisticRename}
+                    onOptimisticDelete={handleOptimisticDelete}
+                    onRevertRename={handleRevertRename}
+                    onRevertDelete={handleRevertDelete}
+                  />
+                ))}
+              </ul>
+            </div>
+          ))
+        )}
+      </nav>
+
+      {/* User footer */}
+      <div className="border-t border-sidebar-border p-2">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button
+              className={cn(
+                "flex w-full items-center gap-2 rounded-md px-2 py-1.5",
+                "text-left hover:bg-sidebar-accent transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+              )}
+              data-testid="sidebar-user-menu-trigger"
+            >
+              <div
+                className={cn(
+                  "flex size-7 shrink-0 items-center justify-center rounded-full",
+                  "bg-surface-3 text-[0.7rem] font-semibold text-foreground",
+                  "border border-border-subtle"
+                )}
+              >
+                {initials(user.name ?? user.email ?? "?")}
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[0.8rem] font-medium">
+                  {user.name ?? "User"}
+                </div>
+                <div className="truncate text-[0.7rem] text-muted-foreground">
+                  {user.email}
+                </div>
+              </div>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" side="top" className="w-60">
+            <DropdownMenuLabel className="text-[0.75rem]">
+              Signed in as
+              <div className="truncate text-[0.8rem] font-normal text-foreground">
+                {user.email}
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/dashboard">Dashboard</Link>
+            </DropdownMenuItem>
+            <DropdownMenuCheckboxItem
+              checked={devMode}
+              onCheckedChange={(v) => {
+                setDevMode(Boolean(v));
+                toast.success(
+                  v ? "Developer mode on" : "Developer mode off"
+                );
+              }}
+              data-testid="sidebar-dev-mode-toggle"
+            >
+              <Braces className="size-3.5" />
+              Developer mode
+            </DropdownMenuCheckboxItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="text-destructive focus:text-destructive"
+              data-testid="sidebar-logout-button"
+            >
+              <LogOut className="size-3.5" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </aside>
+  );
+}
+
+function ChatSidebarItem({
+  chat,
+  active,
+  onOptimisticRename,
+  onOptimisticDelete,
+  onRevertRename,
+  onRevertDelete,
+}: {
+  chat: Chat;
+  active: boolean;
+  onOptimisticRename: (chatId: string, newTitle: string) => void;
+  onOptimisticDelete: (chatId: string) => void;
+  onRevertRename: (chatId: string, previousTitle: string) => void;
+  onRevertDelete: (chatId: string) => void;
+}) {
+  return (
+    <li className="group flex items-center">
+      <Link
+        href={`/chat/${chat.id}`}
+        title={chat.title}
+        data-testid={`sidebar-chat-item-${chat.id}`}
+        className={cn(
+          "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-[0.8rem]",
+          "text-sidebar-foreground/85 transition-colors",
+          "hover:bg-sidebar-accent hover:text-sidebar-foreground",
+          active && "bg-sidebar-accent text-sidebar-foreground font-medium"
+        )}
       >
-        {isCreating
-          ? "Creating..."
-          : "+ New Chat"}
-      </Button>
-    </div>
-
-    {/* Recent Chats */}
-    <div className="px-4 py-3">
-      <h2 className="text-xs uppercase tracking-wide text-muted-foreground">
-        Recent Chats
-      </h2>
-    </div>
-
-    <div className="flex-1 overflow-y-auto px-2">
-      <ChatList chats={chats} />
-    </div>
-
-    {/* Footer */}
-    <div className="border-t p-4">
-      User Footer Here
-    </div>
-
-  </aside>
-);
+        <MessageSquareText
+          className={cn(
+            "size-3.5 shrink-0 text-muted-foreground",
+            active && "text-brand"
+          )}
+        />
+        <span className="min-w-0 flex-1 truncate">{chat.title || "Untitled"}</span>
+        <span className="hidden shrink-0 text-[0.65rem] text-muted-foreground group-hover:hidden">
+          {relativeTime(chat.updatedAt)}
+        </span>
+      </Link>
+      <ChatItemActions
+        chatId={chat.id}
+        currentTitle={chat.title}
+        onOptimisticRename={onOptimisticRename}
+        onOptimisticDelete={onOptimisticDelete}
+        onRevertRename={onRevertRename}
+        onRevertDelete={onRevertDelete}
+      />
+    </li>
+  );
 }

@@ -28,6 +28,7 @@ async function main(): Promise<void> {
     await retrievalService.retrieve({
       query,
       topK: 5,
+      candidatePoolSize: 20,
     });
 
   const context =
@@ -213,8 +214,8 @@ const largeRetrieval =
   await retrievalService.retrieve({
     query:
       "What are the symptoms, causes, diagnosis, treatment, and complications of disease?",
-
     topK: 50,
+    candidatePoolSize: 100,
   });
 
 const boundedContext =

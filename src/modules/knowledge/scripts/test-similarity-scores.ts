@@ -118,7 +118,7 @@ async function main(): Promise<void> {
       await retrievalService.retrieve({
         query: testCase.query,
         topK: 5,
-
+        candidatePoolSize: 20,
         // Deliberately no minScore yet.
       });
 

@@ -19,6 +19,8 @@ async function main(): Promise<void> {
   const result = await retrievalService.retrieve({
     query,
     topK: 5, 
+    candidatePoolSize: 20,
+    minScore: null, 
   });
 
   // 3. Basic Validation (Assertions)

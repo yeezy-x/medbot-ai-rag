@@ -1,5 +1,4 @@
-import { apiClient }
-from "@/lib/api-client";
+import { apiClient } from "@/lib/api-client";
 
 export async function loginUser(
   data: {

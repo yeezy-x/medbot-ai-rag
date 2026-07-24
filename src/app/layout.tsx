@@ -1,10 +1,8 @@
-// src/app/layout.tsx
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
-import { Navbar } from "@/components/navbar";
-
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MedBot — AI Medical Assistant",
-  description: "Grounded medical answers powered by the Gale Encyclopedia of Medicine.",
+  title: "MedBot — Grounded medical answers",
+  description:
+    "A retrieval-augmented medical assistant with cited answers powered by the Gale Encyclopedia of Medicine.",
 };
 
 export default async function RootLayout({
@@ -29,12 +28,23 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full bg-background text-foreground">
         <QueryProvider>
-          <Navbar />
           {children}
+          <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+              style: {
+                background: "var(--surface-3)",
+                border: "1px solid var(--border-subtle)",
+                color: "var(--foreground)",
+              },
+            }}
+          />
         </QueryProvider>
       </body>
     </html>

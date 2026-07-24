@@ -1,247 +1,282 @@
-import {
-  RetrievalService,
-} from "./retrieval.service";
+import { RetrievalService } from "./retrieval.service";
+import { ContextBuilder } from "../builders/context.builder";
+import { PromptBuilder } from "../builders/prompt.builder";
+import type { RAGContext, RAGRequest, RAGResponse } from "../types/rag.types";
+import type {CitationReference,RetrievedChunk} from "../types/retrieval.types";
+import { OllamaChatService } from "@/modules/chat/services/ollama-chat.service";
+import {DEFAULT_MIN_SIMILARITY_SCORE,DEFAULT_TOP_K} from "../constants/retrieval.constants";
+import { MAX_CONTEXT_CHARACTERS } from "../constants/context.constants";
 
-import {
-  ContextBuilder,
-} from "../builders/context.builder";
+/** Rich debug payload exposed only in developer mode. */
+export interface RAGDebugPayload {
+  retrieval: {
+    query: string;
+    topK: number;
+    minScore: number;
+    durationMs: number;
+    chunks: Array<{
+      id: string;
+      chunkIndex?: number;
+      score: number;
+      pageNumber?: number;
+      chapter?: string;
+      section?: string;
+      documentId: string;
+      sourceTitle: string;
+      contentPreview: string;
+      accepted: boolean;
+      rejectionReason?: string;
+    }>;
+  };
+  context: {
+    totalCharacters: number;
+    totalEstimatedTokens: number;
+    maxCharacters: number;
+    acceptedChunkCount: number;
+  };
+  prompt: {
+    system: string;
+    contextPreview: string; // truncated to 4KB
+    question: string;
+  };
+}
 
-import {
-  PromptBuilder,
-} from "../builders/prompt.builder";
+/** Discriminated union emitted by the streaming RAG pipeline. */
+export type RAGStreamEvent =
+  | {
+      type: "context";
+      citations: CitationReference[];
+      retrievedChunkCount: number;
+      acceptedChunkCount: number;
+      retrievalDurationMs: number;
+      debug?: RAGDebugPayload;
+    }
+  | { type: "token"; delta: string }
+  | {
+      type: "done";
+      answer: string;
+      metrics: {
+        durationMs: number;
+        retrievalDurationMs: number;
+        chunkCount: number;
+      };
+    }
+  | { type: "error"; message: string };
 
-import {
-  RAGContext,
-  RAGRequest,
-  RAGResponse,
-} from "../types/rag.types";
+export interface RAGStreamOptions {
+  signal?: AbortSignal;
+  debug?: boolean;
+}
 
-import {
-  OllamaChatService,
-} from "@/modules/chat/services/ollama-chat.service";
-
-import {
-  DEFAULT_TOP_K,
-} from "../constants/retrieval.constants";
+const PREVIEW_CHARS = 320;
+const PROMPT_PREVIEW_LIMIT = 4096;
 
 export class RAGService {
   constructor(
-    private readonly retrievalService =
-      new RetrievalService(),
-
-    private readonly contextBuilder =
-      new ContextBuilder(),
-
-    private readonly promptBuilder =
-      new PromptBuilder(),
-
-    private readonly ollamaChatService =
-      new OllamaChatService()
+    private readonly retrievalService = new RetrievalService(),
+    private readonly contextBuilder = new ContextBuilder(),
+    private readonly promptBuilder = new PromptBuilder(),
+    private readonly ollamaChatService = new OllamaChatService()
   ) {}
 
+  private async buildContext(request: RAGRequest): Promise<RAGContext> {
+    const retrieval = await this.retrievalService.retrieve({
+      query: request.question,
+      topK: request.topK ?? DEFAULT_TOP_K,
+      candidatePoolSize: request.topK ?? DEFAULT_TOP_K,
+      minScore: DEFAULT_MIN_SIMILARITY_SCORE
+    });
+    const context = this.contextBuilder.build(retrieval.chunks);
+    const prompt = this.promptBuilder.build(
+      request.question,
+      context,
+      request.history ?? []
+    );
+    return { retrieval, context, prompt };
+  }
+
+  private filterCitations(ragContext: RAGContext): CitationReference[] {
+    const acceptedChunkIds = new Set(
+      ragContext.context.chunks.map((c) => c.id)
+    );
+    return ragContext.retrieval.citations.filter((c) =>
+      acceptedChunkIds.has(c.chunkId)
+    );
+  }
+
   /**
-   * Builds the complete augmented context required
-   * for answer generation.
-   *
-   * Question
-   *   ↓
-   * Retrieval
-   *   ↓
-   * Context filtering / selection
-   *   ↓
-   * Prompt
+   * Build the rich debug payload from an already-computed RAG context.
+   * Chunks not present in the accepted context window are labelled with a
+   * rejection reason derived from what we know:
+   *   - score below MIN_SIMILARITY_SCORE  → "similarity below threshold"
+   *     (defensive: retrieval usually filters these, but we double-check)
+   *   - otherwise                          → "context window budget exceeded"
    */
-  private async buildContext(
+  private buildDebugPayload(
+    ragContext: RAGContext,
     request: RAGRequest
-  ): Promise<RAGContext> {
-    /*
-     * 1. Retrieve potentially relevant
-     * medical knowledge.
-     */
-    const retrieval =
-      await this.retrievalService.retrieve({
-        query:
-          request.question,
+  ): RAGDebugPayload {
+    const acceptedIds = new Set(ragContext.context.chunks.map((c) => c.id));
+    const chunks = ragContext.retrieval.chunks.map(
+      (c: RetrievedChunk) => {
+        const accepted = acceptedIds.has(c.id);
+        let rejectionReason: string | undefined;
+        if (!accepted) {
+          if (c.score < DEFAULT_MIN_SIMILARITY_SCORE) {
+            rejectionReason = "similarity below threshold";
+          } else {
+            rejectionReason = "context window budget exceeded";
+          }
+        }
+        return {
+          id: c.id,
+          score: c.score,
+          pageNumber: c.pageNumber,
+          chapter: c.chapter,
+          section: c.section,
+          documentId: c.documentId,
+          sourceTitle: c.source.title,
+          contentPreview:
+            c.content.length > PREVIEW_CHARS
+              ? `${c.content.slice(0, PREVIEW_CHARS)}…`
+              : c.content,
+          accepted,
+          rejectionReason,
+        };
+      }
+    );
 
-        topK:
-          request.topK ??
-          DEFAULT_TOP_K,
-      });
-
-    /*
-     * 2. Build the final context window.
-     *
-     * ContextBuilder may:
-     * - reject low-score chunks
-     * - deduplicate chunks
-     * - enforce context budget
-     *
-     * Therefore:
-     *
-     * retrieval.chunks.length
-     *
-     * may be greater than:
-     *
-     * context.chunks.length
-     */
-    const context =
-      this.contextBuilder.build(
-        retrieval.chunks
-      );
-
-    /*
-     * 3. Build the final prompt using only
-     * the accepted context window.
-     */
-    const prompt =
-      this.promptBuilder.build(
-        request.question,
-        context,
-        request.history ?? []
-      );
+    const promptContext = ragContext.prompt.context ?? "";
+    const contextPreview =
+      promptContext.length > PROMPT_PREVIEW_LIMIT
+        ? `${promptContext.slice(0, PROMPT_PREVIEW_LIMIT)}…`
+        : promptContext;
 
     return {
-      retrieval,
-      context,
-      prompt,
+      retrieval: {
+        query: request.question,
+        topK: request.topK ?? DEFAULT_TOP_K,
+        minScore: DEFAULT_MIN_SIMILARITY_SCORE,
+        durationMs: ragContext.retrieval.durationMs,
+        chunks,
+      },
+      context: {
+        totalCharacters: ragContext.context.totalCharacters,
+        totalEstimatedTokens: ragContext.context.totalEstimatedTokens,
+        maxCharacters: MAX_CONTEXT_CHARACTERS,
+        acceptedChunkCount: ragContext.context.chunks.length,
+      },
+      prompt: {
+        system: ragContext.prompt.system ?? "",
+        contextPreview,
+        question: ragContext.prompt.question ?? request.question,
+      },
     };
   }
 
   /**
-   * Main RAG pipeline entry point.
-   *
-   * Retrieve
-   *   ↓
-   * Augment
-   *   ↓
-   * Generate
-   *
-   * No chat persistence belongs here.
+   * Non-streaming pipeline — kept for compatibility.
    */
-  async generate(
-    request: RAGRequest
-  ): Promise<RAGResponse> {
-    const startedAt =
-      Date.now();
+  async generate(request: RAGRequest): Promise<RAGResponse> {
+    const startedAt = Date.now();
+    const ragContext = await this.buildContext(request);
+    const citations = this.filterCitations(ragContext);
 
-    /*
-     * 1. Run retrieval and construct
-     * the accepted context window.
-     */
-    const ragContext =
-      await this.buildContext(
-        request
-      );
-
-    /*
-     * 2. Determine exactly which chunks
-     * were accepted by ContextBuilder.
-     */
-    const acceptedChunkIds =
-      new Set(
-        ragContext.context.chunks.map(
-          (chunk) => chunk.id
-        )
-      );
-
-    /*
-     * 3. Keep citations only for chunks
-     * that are actually present in the
-     * context sent to the LLM.
-     *
-     * This prevents citation
-     * over-attribution.
-     */
-    const citations =
-      ragContext.retrieval.citations.filter(
-        (citation) =>
-          acceptedChunkIds.has(
-            citation.chunkId
-          )
-      );
-
-    /*
-     * 4. Development observability.
-     */
-    console.log(
-      "\n========== RAG PIPELINE =========="
-    );
-
-    console.log({
-      question:
-        request.question,
-
-      retrievedChunks:
-        ragContext.retrieval.chunks.length,
-
-      acceptedContextChunks:
-        ragContext.context.chunks.length,
-
-      returnedCitations:
-        citations.length,
+    const response = await this.ollamaChatService.generate({
+      model: "qwen2.5-coder:3b",
+      system: ragContext.prompt.system,
+      prompt: ragContext.prompt.context,
+      stream: false,
     });
 
-    console.log(
-      "\n[RAG FLOW] Final Context Sent to LLM:"
-    );
-
-    console.log(
-      ragContext.context.text
-    );
-
-    console.log(
-      "\n[RAG FLOW] Final Prompt Sent to LLM:"
-    );
-
-    console.log(
-      ragContext.prompt.context
-    );
-
-    /*
-     * 5. Generate the final answer.
-     */
-    const response =
-      await this.ollamaChatService.generate({
-        model:
-          "qwen2.5-coder:3b",
-
-        system:
-          ragContext.prompt.system,
-
-        prompt:
-          ragContext.prompt.context,
-
-        stream:
-          false,
-      });
-
-    console.log(
-      "\n========== OLLAMA =========="
-    );
-
-    console.log(response);
-
-    /*
-     * 6. Return only the AI-domain result.
-     *
-     * Database persistence remains the
-     * responsibility of ChatService.
-     */
     return {
-      answer:
-        response.response,
-
+      answer: response.response,
       citations,
-
       metrics: {
-        durationMs:
-          Date.now() - startedAt,
+        durationMs: Date.now() - startedAt,
+        retrievalDurationMs: ragContext.retrieval.durationMs,
+        chunkCount: ragContext.context.chunks.length,
+      },
+    };
+  }
 
-        retrievalDurationMs:
-          ragContext.retrieval.durationMs,
+  /**
+   * Streaming pipeline. Emits a `context` event first (citations + optionally
+   * a rich debug payload when `options.debug` is true), then per-token `token`
+   * events, then a final `done` event with the fully-accumulated answer.
+   */
+  async *streamGenerate(
+    request: RAGRequest,
+    options: RAGStreamOptions = {}
+  ): AsyncGenerator<RAGStreamEvent, void, unknown> {
+    const { signal, debug = false } = options;
+    const startedAt = Date.now();
+    let ragContext: RAGContext;
+    try {
+      ragContext = await this.buildContext(request);
+    } catch (err) {
+      yield {
+        type: "error",
+        message: err instanceof Error ? err.message : "Retrieval failed",
+      };
+      return;
+    }
 
-        chunkCount:
-          ragContext.context.chunks.length,
+    const citations = this.filterCitations(ragContext);
+    yield {
+      type: "context",
+      citations,
+      retrievedChunkCount: ragContext.retrieval.chunks.length,
+      acceptedChunkCount: ragContext.context.chunks.length,
+      retrievalDurationMs: ragContext.retrieval.durationMs,
+      ...(debug
+        ? { debug: this.buildDebugPayload(ragContext, request) }
+        : {}),
+    };
+
+    let answer = "";
+    try {
+      for await (const frame of this.ollamaChatService.generateStream(
+        {
+          model: "qwen2.5-coder:3b",
+          system: ragContext.prompt.system,
+          prompt: ragContext.prompt.context,
+        },
+        signal
+      )) {
+        if (frame.delta) {
+          answer += frame.delta;
+          yield { type: "token", delta: frame.delta };
+        }
+        if (frame.done) break;
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        yield {
+          type: "done",
+          answer,
+          metrics: {
+            durationMs: Date.now() - startedAt,
+            retrievalDurationMs: ragContext.retrieval.durationMs,
+            chunkCount: ragContext.context.chunks.length,
+          },
+        };
+        return;
+      }
+      yield {
+        type: "error",
+        message: err instanceof Error ? err.message : "Generation failed",
+      };
+      return;
+    }
+
+    yield {
+      type: "done",
+      answer,
+      metrics: {
+        durationMs: Date.now() - startedAt,
+        retrievalDurationMs: ragContext.retrieval.durationMs,
+        chunkCount: ragContext.context.chunks.length,
       },
     };
   }

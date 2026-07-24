@@ -30,6 +30,7 @@ async function main(): Promise<void> {
     const result=await retrievalService.retrieve({
         query,
         topK: 5,
+        candidatePoolSize: 20,
     });
 
     console.log({

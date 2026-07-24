@@ -80,6 +80,15 @@ export class ChatRepository extends BaseRepository {
     });
   }
 
+  async updateTitleForUser(id: string, userId: string, title: string) {
+    // Delegates via update with a compound where guard so we never rename
+    // another user's chat.
+    return this.db.chatSession.updateMany({
+      where: { id, userId },
+      data: { title },
+    });
+  }
+
   async delete(
     id: string
   ) {
@@ -110,17 +119,24 @@ export class ChatRepository extends BaseRepository {
     sessionId: string
   ) {
     return this.db.message.findMany({
-      where: {
-        sessionId,
-      },
-      include: {
-        citations: true,
+      where:{sessionId},
+      include:{
+        citations:{
+          include:{
+            chunk:{
+              select:{
+                documentId:true,
+              }
+            }
+          }
+        }
       },
       orderBy: {
         createdAt: "asc",
-      },
+      }
     });
   }
+    
 
   // ---------------------------------------------------------------------------
   // Citations
