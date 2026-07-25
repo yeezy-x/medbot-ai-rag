@@ -85,7 +85,8 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-
+  --content-max:48rem;
+  --sidebar-width:260px;
   --sidebar: oklch(0.98 0 0);
   --sidebar-foreground: oklch(0.16 0 0);
   --sidebar-primary: oklch(0.2 0 0);
@@ -167,6 +168,8 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
+    height: 100%;
+    overflow: hidden;
     @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
     text-rendering: optimizeLegibility;
@@ -328,3 +331,10 @@
   color: var(--brand);
   font-weight: 300;
 }
+
+/* Font-size preference (Settings page). Applied to <html>, so Tailwind's
+   rem-based spacing/sizing utilities scale proportionally — a deliberate
+   accessibility choice over a scoped font-only override. */
+html.text-scale-sm { font-size: 14px; }
+html.text-scale-md { font-size: 16px; }
+html.text-scale-lg { font-size: 18px; }

@@ -31,12 +31,27 @@ export default async function ChatDetailPage({ params }: ChatDetailPageProps) {
     createdAt: message.createdAt.toISOString(),
   }));
 
-  return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto px-6 py-4">
-        <MessageList messages={serializedMessages} />
+ return (
+  <div className="flex h-full min-h-0 flex-1 flex-col">
+
+    <div className="flex-1 min-h-0 overflow-y-auto">
+
+      <div className="mx-auto w-full max-w-var(--content-max) px-6 py-6 pb-32">
+        <MessageList
+          messages={serializedMessages}
+        />
+      </div>
+
+    </div>
+
+    <div className="shrink-0 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/75 ">
+
+      <div className="mx-auto w-full  max-w-[var(--content-max)]px-6 py-4">
         <ChatInputWrapper sessionId={id} />
       </div>
+
     </div>
-  );
+
+  </div>
+);
 }

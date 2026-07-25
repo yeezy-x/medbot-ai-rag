@@ -2,16 +2,29 @@
 
 import { Cpu, BookOpen } from "lucide-react";
 
-export function ChatHeader() {
+import { MobileSidebar } from "./mobile-sidebar";
+import { Chat } from "../types/chat.types";
+
+interface ChatHeaderProps {
+  chats?: Chat[];
+  user?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+  };
+}
+
+export function ChatHeader({ chats, user }: ChatHeaderProps) {
   return (
     <header
-      className="flex h-12 items-center justify-between border-b border-border-subtle px-6"
+      className="flex h-12 items-center justify-between gap-3 border-b border-border-subtle px-3 sm:px-6"
       data-testid="chat-header"
     >
-      <div className="flex items-center gap-3">
-        <div className="flex flex-col leading-tight">
-          <span className="text-[0.85rem] font-semibold">MedBot</span>
-          <span className="text-[0.65rem] text-muted-foreground">
+      <div className="flex min-w-0 items-center gap-2">
+        {chats && user ? <MobileSidebar chats={chats} user={user} /> : null}
+        <div className="flex min-w-0 flex-col leading-tight">
+          <span className="truncate text-[0.85rem] font-semibold">MedBot</span>
+          <span className="truncate text-[0.65rem] text-muted-foreground">
             Grounded medical assistant
           </span>
         </div>

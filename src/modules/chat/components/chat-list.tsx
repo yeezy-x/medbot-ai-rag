@@ -1,10 +1,7 @@
 // src/modules/chat/components/chat-list.tsx
+import { Chat } from "../types/chat.types";
 import { ChatItem } from "./chat-item";
 
-interface Chat {
-  id: string;
-  title: string;
-}
 
 interface ChatListProps {
   chats: Chat[];

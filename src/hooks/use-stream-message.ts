@@ -18,6 +18,8 @@ interface StreamMetrics {
 
 interface SendOptions {
   debug?: boolean;
+  topK?: number;
+  minScore?: number;
 }
 
 interface UseStreamMessageResult {
@@ -129,6 +131,8 @@ export function useStreamMessage(): UseStreamMessageResult {
           onEvent,
           signal: controller.signal,
           debug: options.debug,
+          topK: options.topK,
+          minScore: options.minScore,
         });
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {

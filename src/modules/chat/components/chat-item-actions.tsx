@@ -72,9 +72,12 @@ export function ChatItemActions({
             aria-label="Chat options"
             data-testid={`sidebar-chat-actions-${chatId}`}
             className={cn(
-              "invisible ml-auto flex size-6 shrink-0 items-center justify-center rounded-md",
+              "ml-auto flex size-6 shrink-0 items-center justify-center rounded-md",
               "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-              "focus-visible:visible group-hover:visible aria-expanded:visible"
+              // Below md there's no reliable hover state (touch), so the
+              // trigger stays visible at all times. At md+ (pointer devices)
+              // it only reveals on hover/focus/open, matching desktop density.
+              "max-md:visible md:invisible md:focus-visible:visible md:group-hover:visible md:aria-expanded:visible"
             )}
           >
             <MoreHorizontal className="size-3.5" />

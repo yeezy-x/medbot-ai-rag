@@ -44,6 +44,8 @@ export interface SendMessageRequest {
   chatId: string;
   userId: string;
   message: string;
+  topK?: number;
+  minScore?: number;
 }
 
 export interface SendMessageResponse {

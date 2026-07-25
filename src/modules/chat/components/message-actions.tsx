@@ -46,11 +46,12 @@ export function MessageActions({
 
   return (
     <div
-      className="mt-2 flex items-center gap-0.5 opacity-0 transition-opacity duration-150 group-hover/msg:opacity-100 focus-within:opacity-100"
+      className="mt-2 flex items-center gap-0.5 max-md:gap-1 transition-opacity duration-150 max-md:opacity-100 md:opacity-0 md:group-hover/msg:opacity-100 md:focus-within:opacity-100"
       data-testid="assistant-message-actions"
     >
       <IconButton
         size="xs"
+        className="max-md:h-8 max-md:w-8"
         label={copied ? "Copied" : "Copy answer"}
         onClick={handleCopy}
         data-testid="message-action-copy"
@@ -60,6 +61,7 @@ export function MessageActions({
       {onRegenerate && (
         <IconButton
           size="xs"
+          className="max-md:h-8 max-md:w-8"
           label="Regenerate"
           onClick={onRegenerate}
           disabled={isLoading}
@@ -70,6 +72,7 @@ export function MessageActions({
       )}
       <IconButton
         size="xs"
+        className="max-md:h-8 max-md:w-8"
         label="Good answer"
         active={feedback === "up"}
         onClick={() => handleFeedback("up")}
@@ -79,6 +82,7 @@ export function MessageActions({
       </IconButton>
       <IconButton
         size="xs"
+        className="max-md:h-8 max-md:w-8"
         label="Needs work"
         active={feedback === "down"}
         onClick={() => handleFeedback("down")}

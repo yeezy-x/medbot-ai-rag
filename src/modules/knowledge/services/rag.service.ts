@@ -84,7 +84,7 @@ export class RAGService {
       query: request.question,
       topK: request.topK ?? DEFAULT_TOP_K,
       candidatePoolSize: request.topK ?? DEFAULT_TOP_K,
-      minScore: DEFAULT_MIN_SIMILARITY_SCORE
+      minScore: request.minScore ?? DEFAULT_MIN_SIMILARITY_SCORE
     });
     const context = this.contextBuilder.build(retrieval.chunks);
     const prompt = this.promptBuilder.build(
@@ -117,12 +117,13 @@ export class RAGService {
     request: RAGRequest
   ): RAGDebugPayload {
     const acceptedIds = new Set(ragContext.context.chunks.map((c) => c.id));
+    const effectiveMinScore = request.minScore ?? DEFAULT_MIN_SIMILARITY_SCORE;
     const chunks = ragContext.retrieval.chunks.map(
       (c: RetrievedChunk) => {
         const accepted = acceptedIds.has(c.id);
         let rejectionReason: string | undefined;
         if (!accepted) {
-          if (c.score < DEFAULT_MIN_SIMILARITY_SCORE) {
+          if (c.score < effectiveMinScore) {
             rejectionReason = "similarity below threshold";
           } else {
             rejectionReason = "context window budget exceeded";
@@ -156,7 +157,7 @@ export class RAGService {
       retrieval: {
         query: request.question,
         topK: request.topK ?? DEFAULT_TOP_K,
-        minScore: DEFAULT_MIN_SIMILARITY_SCORE,
+        minScore: effectiveMinScore,
         durationMs: ragContext.retrieval.durationMs,
         chunks,
       },

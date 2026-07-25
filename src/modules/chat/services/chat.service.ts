@@ -97,7 +97,8 @@ export class ChatService extends BaseService {
     const ragResponse = await this.ragService.generate({
       question: request.message,
       history,
-      topK: DEFAULT_TOP_K,
+      topK: request.topK ?? DEFAULT_TOP_K,
+      minScore: request.minScore,
     });
 
     const assistantMessage = await this.chatRepository.createMessage({
@@ -153,7 +154,8 @@ export class ChatService extends BaseService {
       {
         question: request.message,
         history,
-        topK: DEFAULT_TOP_K,
+        topK: request.topK ?? DEFAULT_TOP_K,
+        minScore: request.minScore,
       },
       { signal, debug }
     )) {

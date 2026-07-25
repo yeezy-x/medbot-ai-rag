@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Toaster } from "sonner";
 import "./globals.css";
 import { QueryProvider } from "@/providers/query-provider";
+import { ThemedToaster } from "@/components/themed-toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,23 +28,33 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`dark text-scale-md ${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-background text-foreground">
+      <head>
+        {/* Applies the stored theme/font-size before first paint so there's
+            no flash of the wrong theme. Runs before React hydrates; the
+            resulting className mismatch is intentionally covered by
+            suppressHydrationWarning on <html> above. Defaults preserved
+            (dark, medium font) when nothing is stored or JS is disabled. */}
+        <script
+        suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{
+              var root=document.documentElement;
+              var theme=localStorage.getItem('medbot:theme');
+              if(theme==='light'){root.classList.remove('dark');}else{root.classList.add('dark');}
+              var size=localStorage.getItem('medbot:font-size');
+              root.classList.remove('text-scale-sm','text-scale-md','text-scale-lg');
+              root.classList.add('text-scale-'+((size==='sm'||size==='lg')?size:'md'));
+            }catch(e){}})();`,
+          }}
+        />
+      </head>
+      <body className="h-dvh overflow-hidden bg-background text-foreground">
         <QueryProvider>
           {children}
-          <Toaster
-            theme="dark"
-            position="bottom-right"
-            toastOptions={{
-              style: {
-                background: "var(--surface-3)",
-                border: "1px solid var(--border-subtle)",
-                color: "var(--foreground)",
-              },
-            }}
-          />
+          <ThemedToaster />
         </QueryProvider>
       </body>
     </html>

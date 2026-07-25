@@ -8,6 +8,7 @@ import {
   LogOut,
   Plus,
   Search,
+  Settings,
   Sparkles,
   MessageSquareText,
 } from "lucide-react";
@@ -48,7 +49,28 @@ interface SidebarProps {
   };
 }
 
+/**
+ * Persistent desktop sidebar. Hidden below `md` — on smaller viewports,
+ * `MobileSidebar` renders the same `SidebarContent` inside a Sheet drawer
+ * instead. Keep all sidebar logic in `SidebarContent`; this is just the
+ * desktop presentation wrapper.
+ */
 export function Sidebar({ initialChats, user }: SidebarProps) {
+  return (
+    <aside
+      className="hidden md:flex w-65 shrink-0 flex-col bg-sidebar text-sidebar-foreground"
+      data-testid="chat-sidebar"
+    >
+      <SidebarContent initialChats={initialChats} user={user} />
+    </aside>
+  );
+}
+
+export function SidebarContent({
+  initialChats,
+  user,
+  onNavigate,
+}: SidebarProps & { onNavigate?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
   const [chats, setChats] = useState<Chat[]>(initialChats);
@@ -83,6 +105,7 @@ export function Sidebar({ initialChats, user }: SidebarProps) {
         router.push(`/chat/${newChat.id}`);
         router.refresh();
       });
+      onNavigate?.();
     } catch {
       toast.error("Couldn't start a new conversation");
     } finally {
@@ -117,10 +140,7 @@ export function Sidebar({ initialChats, user }: SidebarProps) {
   };
 
   return (
-    <aside
-      className="hidden md:flex w-65 shrink-0 flex-col bg-sidebar text-sidebar-foreground"
-      data-testid="chat-sidebar"
-    >
+    <div className="flex h-full min-h-0 w-full flex-col">
       {/* Brand */}
       <div className="flex items-center gap-2 px-4 py-3.5">
         <div className="flex size-7 items-center justify-center rounded-md bg-brand text-brand-foreground shadow-sm">
@@ -183,6 +203,7 @@ export function Sidebar({ initialChats, user }: SidebarProps) {
                     onOptimisticDelete={handleOptimisticDelete}
                     onRevertRename={handleRevertRename}
                     onRevertDelete={handleRevertDelete}
+                    onNavigate={onNavigate}
                   />
                 ))}
               </ul>
@@ -233,6 +254,12 @@ export function Sidebar({ initialChats, user }: SidebarProps) {
             <DropdownMenuItem asChild>
               <Link href="/dashboard">Dashboard</Link>
             </DropdownMenuItem>
+            <DropdownMenuItem asChild onClick={onNavigate}>
+              <Link href="/settings">
+                <Settings className="size-3.5" />
+                Settings
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuCheckboxItem
               checked={devMode}
               onCheckedChange={(v) => {
@@ -258,7 +285,7 @@ export function Sidebar({ initialChats, user }: SidebarProps) {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </aside>
+    </div>
   );
 }
 
@@ -269,6 +296,7 @@ function ChatSidebarItem({
   onOptimisticDelete,
   onRevertRename,
   onRevertDelete,
+  onNavigate,
 }: {
   chat: Chat;
   active: boolean;
@@ -276,6 +304,7 @@ function ChatSidebarItem({
   onOptimisticDelete: (chatId: string) => void;
   onRevertRename: (chatId: string, previousTitle: string) => void;
   onRevertDelete: (chatId: string) => void;
+  onNavigate?: () => void;
 }) {
   return (
     <li className="group flex items-center">
@@ -283,6 +312,7 @@ function ChatSidebarItem({
         href={`/chat/${chat.id}`}
         title={chat.title}
         data-testid={`sidebar-chat-item-${chat.id}`}
+        onClick={onNavigate}
         className={cn(
           "flex min-w-0 flex-1 items-center gap-2 rounded-md px-2 py-1.5 text-[0.8rem]",
           "text-sidebar-foreground/85 transition-colors",

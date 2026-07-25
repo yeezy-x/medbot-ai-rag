@@ -26,6 +26,8 @@ export async function POST(
       chatId,
       userId: user.id,
       message: data.message,
+      topK: data.topK,
+      minScore: data.minScore,
     });
 
   });

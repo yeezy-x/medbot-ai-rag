@@ -45,7 +45,7 @@ export function MessageList({
       role="log"
       aria-live="polite"
       aria-relevant="additions"
-      className={cn("mx-auto w-full max-w-3xl px-4 sm:px-6 py-6 space-y-6")}
+      className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-end px-4 py-6 pb-32 sm:px-6"
       data-testid="message-list"
     >
       {messages.map((message, idx) => (

@@ -61,6 +61,8 @@ export interface StreamHandlers {
   onEvent: (event: StreamEvent) => void;
   signal?: AbortSignal;
   debug?: boolean;
+  topK?: number;
+  minScore?: number;
 }
 
 /**
@@ -70,7 +72,7 @@ export interface StreamHandlers {
 export async function streamMessage(
   sessionId: string,
   message: string,
-  { onEvent, signal, debug }: StreamHandlers
+  { onEvent, signal, debug, topK, minScore }: StreamHandlers
 ): Promise<void> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -80,7 +82,12 @@ export async function streamMessage(
   const response = await fetch(`/api/chats/${sessionId}/messages/stream`, {
     method: "POST",
     headers,
-    body: JSON.stringify({ sessionId, message }),
+    body: JSON.stringify({
+      sessionId,
+      message,
+      ...(topK !== undefined ? { topK } : {}),
+      ...(minScore !== undefined ? { minScore } : {}),
+    }),
     signal,
   });
 

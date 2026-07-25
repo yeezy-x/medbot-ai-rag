@@ -13,6 +13,7 @@ export interface RAGRequest {
   question: string;
   history?: RAGConversationMessage[];
   topK?: number;
+  minScore?: number;
 }
 
 export interface RAGResponse {

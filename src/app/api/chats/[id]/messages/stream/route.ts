@@ -1,7 +1,10 @@
 import { auth } from "@/auth";
 import { validate } from "@/lib/validate";
 import { ChatService } from "@/modules/chat/services";
-import { askQuestionSchema } from "@/modules/chat/schemas/ask-question.schema";
+import {
+  askQuestionSchema,
+  type AskQuestionInput,
+} from "@/modules/chat/schemas/ask-question.schema";
 import { handleError } from "@/lib/error-handler";
 import type { RAGStreamEvent } from "@/modules/knowledge/services/rag.service";
 
@@ -26,7 +29,7 @@ export async function POST(
   context: { params: Promise<{ id: string }> }
 ) {
   let userId: string;
-  let data: { sessionId: string; message: string };
+  let data: AskQuestionInput;
   let chatId: string;
 
   try {
@@ -83,6 +86,8 @@ export async function POST(
             chatId,
             userId,
             message: data.message,
+            topK: data.topK,
+            minScore: data.minScore,
           },
           { signal: abortController.signal, debug }
         )) {
