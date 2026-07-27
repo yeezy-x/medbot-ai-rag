@@ -1,11 +1,8 @@
-export default function ChatLayout({
-    children,
+export default function ChatRouteLayout({
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <>
-            {children}
-        </>
-    );
+  return <>{children}</>;
 }
+

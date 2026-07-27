@@ -46,7 +46,7 @@ model Message {
   sessionId String
   createdAt DateTime    @default(now())
   citations Citation[]
-  session   ChatSession @relation(fields: [sessionId], references: [id])
+  session   ChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([sessionId])
 }
@@ -57,8 +57,8 @@ model Citation {
   sourceTitle String
   chunkId     String
   messageId   String
-  message Message @relation(  fields: [messageId], references: [id])
-  chunk Chunk @relation(fields: [chunkId], references: [id]) 
+  message Message @relation(  fields: [messageId], references: [id], onDelete: Cascade)
+  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade) 
    @@index([messageId])  
    @@index([chunkId])
 }

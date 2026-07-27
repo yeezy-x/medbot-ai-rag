@@ -149,7 +149,7 @@ export function SidebarContent({
         <div className="flex flex-col leading-tight">
           <span className="text-[0.85rem] font-semibold tracking-tight">MedBot</span>
           <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
-            RAG · Gale
+            RAG · Gale Encyclopedia
           </span>
         </div>
       </div>

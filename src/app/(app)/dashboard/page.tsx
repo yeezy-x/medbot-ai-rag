@@ -10,16 +10,12 @@ import { RecentChats } from "@/modules/dashboard/components/recent-chats";
 export default async function DashboardPage() {
   const user = await requireUser();
 
-  const chatService =
-    new ChatService();
+  const chatService = new ChatService();
 
-  const chats =
-    await chatService.getUserChats(
-      user.id
-    );
+  const chats = await chatService.getUserChats(user.id);
 
   return (
-    <div className="max-w-5xl mx-auto p-8 space-y-8">
+    <div className="w-full max-w-200 mx-auto px-8 py-8 space-y-8">
       <DashboardHeader
         name={user.name ?? "User"}
       />

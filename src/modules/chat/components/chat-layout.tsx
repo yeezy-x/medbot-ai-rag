@@ -11,26 +11,21 @@ export default async function ChatLayout({
   children: ReactNode;
 }) {
   const user = await requireUser();
-
   const chatService = new ChatService();
-
   const chats = await chatService.getUserChats(user.id);
-  // Normalize Date objects to strings to satisfy Chat type expectations
-  const normalizedChats = chats.map((c) => ({
-    ...c,
-    createdAt: c.createdAt instanceof Date ? c.createdAt.toISOString() : String(c.createdAt),
-    updatedAt: c.updatedAt instanceof Date ? c.updatedAt.toISOString() : String(c.updatedAt),
+  const normalizedChats = chats.map((chat) => ({
+    ...chat,
+    createdAt: chat.createdAt.toISOString(),
+    updatedAt: chat.updatedAt.toISOString(),
   }));
 
   return (
-    <div className="h-screen flex overflow-hidden">
-      <Sidebar initialChats={normalizedChats} user={user}/>
+    <div className="flex h-dvh min-h-0 overflow-hidden bg-background">
+      <Sidebar initialChats={normalizedChats} user={user} />
 
-      <div className="flex-1 flex flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <ChatHeader chats={normalizedChats} user={user} />
-        <div className="flex-1 overflow-hidden">
-          {children}
-        </div>
+        <main className="flex min-h-0 flex-1 overflow-x-hidden">{children}</main>
       </div>
     </div>
   );

@@ -41,23 +41,24 @@ export function MessageList({
   const sentinelRef = useAutoScroll(sentinelDep);
 
   return (
-    <div
-      role="log"
-      aria-live="polite"
-      aria-relevant="additions"
-      className="mx-auto flex min-h-full w-full max-w-3xl flex-col justify-end px-4 py-6 pb-32 sm:px-6"
-      data-testid="message-list"
-    >
-      {messages.map((message, idx) => (
-        <MessageItem
-          key={message.id}
-          role={message.role}
-          content={message.content}
-          createdAt={message.createdAt}
-          citations={message.citations}
-          metrics={message.metrics}
-          onOpenCitation={onOpenCitation}
-          onRegenerate={
+    <div className="flex justify-center">
+      <div
+        role="log"
+        aria-live="polite"
+        aria-relevant="additions"
+        className={cn("w-full max-w-3xl px-6 sm:px-10 py-6 space-y-6")}
+        data-testid="message-list"
+      >
+        {messages.map((message, idx) => (
+          <MessageItem
+            key={message.id}
+            role={message.role}
+            content={message.content}
+            createdAt={message.createdAt}
+            citations={message.citations}
+            metrics={message.metrics}
+            onOpenCitation={onOpenCitation}
+            onRegenerate={
             message.role === "ASSISTANT" &&
             idx === messages.length - 1 &&
             !streaming &&
@@ -65,32 +66,33 @@ export function MessageList({
               ? onRegenerate
               : undefined
           }
-        />
-      ))}
+          />
+        ))}
 
-      {pendingUserMessage && (
-        <MessageItem
-          role="USER"
-          content={pendingUserMessage}
-          createdAt={new Date().toISOString()}
-          pending
-        />
-      )}
+        {pendingUserMessage && (
+          <MessageItem
+            role="USER"
+            content={pendingUserMessage}
+            createdAt={new Date().toISOString()}
+            pending
+          />
+        )}
 
-      {streaming && (
-        <MessageItem
-          role="ASSISTANT"
-          content={streamingContent ?? ""}
-          createdAt={new Date().toISOString()}
-          streaming
-          citations={streamingCitations}
-          onOpenCitation={onOpenCitation}
-        >
-          {!streamingContent ? <ThinkingIndicator /> : undefined}
-        </MessageItem>
-      )}
+        {streaming && (
+          <MessageItem
+            role="ASSISTANT"
+            content={streamingContent ?? ""}
+            createdAt={new Date().toISOString()}
+            streaming
+            citations={streamingCitations}
+            onOpenCitation={onOpenCitation}
+          >
+            {!streamingContent ? <ThinkingIndicator /> : undefined}
+          </MessageItem>
+        )}
 
-      <div ref={sentinelRef} aria-hidden className="h-4" />
+        <div ref={sentinelRef} aria-hidden className="h-4" />
+      </div>
     </div>
   );
 }

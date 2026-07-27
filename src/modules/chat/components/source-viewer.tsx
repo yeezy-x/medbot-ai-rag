@@ -18,11 +18,14 @@ import { cn } from "@/lib/utils";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
-// Configure the pdf.js worker from the same version we bundle.
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.min.mjs",
-  import.meta.url
-).toString();
+// Load the worker that exactly matches the pdf.js API version react-pdf
+// bundles internally (`pdfjs.version`). Resolving the worker from a local
+// `pdfjs-dist` import can silently pick up a *different* hoisted copy than
+// the one react-pdf uses internally, producing:
+//   "The API version 'X' does not match the Worker version 'Y'."
+// Pinning to `pdfjs.version` via CDN avoids the mismatch regardless of how
+// npm resolves/hoists the two copies.
+pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface SourceViewerProps {
   documentId: string;
@@ -49,7 +52,7 @@ export function SourceViewer({
   const pageInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const src = useMemo(() => `/api/documents/${documentId}/file`, [documentId]);
+  const src = useMemo(() => `/api/documents/${documentId}`, [documentId]);
 
   // Whenever a new citation is opened, jump to the new page.
   useEffect(() => {

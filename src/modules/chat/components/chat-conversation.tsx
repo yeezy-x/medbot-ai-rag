@@ -10,6 +10,7 @@ import { ChatHeaderActions } from "@/modules/chat/components/chat-header-actions
 import { LazySourceViewer } from "@/modules/chat/components/source-viewer-lazy";
 import { useStreamMessage } from "@/hooks/use-stream-message";
 import { useDevMode } from "@/hooks/use-dev-mode";
+import { useRetrievalSettings } from "@/hooks/use-retrieval-settings";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/modules/chat/types/chat.types";
 import type {
@@ -52,6 +53,7 @@ export function ChatConversation({
   const [lastTotalMs, setLastTotalMs] = useState<number | undefined>(undefined);
   const [openedSource, setOpenedSource] = useState<OpenedSource | null>(null);
   const [devMode] = useDevMode();
+  const [retrieval] = useRetrievalSettings();
 
   const stream = useStreamMessage();
   const [, startTransition] = useTransition();
@@ -64,6 +66,8 @@ export function ChatConversation({
       try {
         const result = await stream.send(sessionId, message, {
           debug: devMode,
+          topK: retrieval.topK,
+          minScore: retrieval.minScore,
         });
         const now = new Date().toISOString();
         const userMsg: Message = {
@@ -101,7 +105,7 @@ export function ChatConversation({
         );
       }
     },
-    [sessionId, stream, router, devMode]
+    [sessionId, stream, router, devMode, retrieval.topK, retrieval.minScore]
   );
 
   const handleSend = useCallback(
@@ -192,7 +196,7 @@ export function ChatConversation({
         {/* Chat column */}
         <div
           className={cn(
-            "flex min-w-0 flex-1 flex-col",
+            "flex min-h-0 min-w-0 flex-1 flex-col",
             isSplit && "hidden md:flex md:basis-1/2 md:min-w-105"
           )}
         >
