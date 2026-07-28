@@ -50,7 +50,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="h-dvh overflow-hidden bg-background text-foreground">
+      <body className="min-h-dvh bg-background text-foreground">
         <QueryProvider>
           {children}
           <ThemedToaster />
