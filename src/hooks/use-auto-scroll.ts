@@ -1,20 +1,28 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { type RefObject, useEffect, useRef } from "react";
 
 /**
- * Auto-scrolls a container to the bottom whenever the tracked dependency
- * changes (typically the messages array length or the latest message id).
- * The returned ref must be attached to a sentinel element inside a scrollable
- * ancestor.
+ * Scrolls to the bottom when `dependency` changes. Prefer `scrollContainerRef`
+ * (the overflow-y-auto element) so flex layouts don't clip the last messages.
+ * The returned sentinel ref is a fallback when no container ref is passed.
  */
-export function useAutoScroll<T>(dependency: T, behavior: ScrollBehavior = "smooth") {
-  const ref = useRef<HTMLDivElement>(null);
+export function useAutoScroll<T>(
+  dependency: T,
+  scrollContainerRef?: RefObject<HTMLElement | null>,
+  behavior: ScrollBehavior = "auto"
+) {
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    ref.current?.scrollIntoView({ behavior, block: "end" });
+    const container = scrollContainerRef?.current;
+    if (container) {
+      container.scrollTo({ top: container.scrollHeight, behavior });
+      return;
+    }
+    sentinelRef.current?.scrollIntoView({ behavior, block: "end" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dependency]);
+  }, [dependency, behavior]);
 
-  return ref;
+  return sentinelRef;
 }

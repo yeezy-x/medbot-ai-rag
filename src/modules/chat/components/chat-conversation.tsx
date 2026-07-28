@@ -183,8 +183,10 @@ export function ChatConversation({
   const activeDebug = stream.debug ?? lastDebug;
   const isSplit = Boolean(openedSource);
 
+  const messageScrollRef = useRef<HTMLDivElement>(null);
+
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
       <ChatHeaderActions
         devMode={devMode}
         streaming={stream.streaming}
@@ -192,21 +194,32 @@ export function ChatConversation({
         onOpenInspector={() => setInspectorOpen(true)}
       />
 
-      <div className="flex flex-1 min-h-0">
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 w-full overflow-hidden",
+          isSplit && "flex-col md:flex-row"
+        )}
+      >
         {/* Chat column */}
         <div
           className={cn(
-            "flex min-h-0 min-w-0 flex-1 flex-col",
-            isSplit && "hidden md:flex md:basis-1/2 md:min-w-105"
+            "flex min-h-0 min-w-0 flex-col",
+            isSplit
+              ? "h-[42%] shrink-0 md:h-auto md:w-1/2 md:max-w-[50%] md:basis-1/2"
+              : "min-h-0 flex-1"
           )}
         >
-          <div className="flex-1 overflow-y-auto">
+          <div
+            ref={messageScrollRef}
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+          >
             <MessageList
               messages={messages}
               pendingUserMessage={pendingUser}
               streaming={stream.streaming}
               streamingContent={stream.partial}
               streamingCitations={streamingCitations}
+              scrollContainerRef={messageScrollRef}
               onRegenerate={
                 !stream.streaming && lastUserMessage
                   ? handleRegenerate
@@ -215,23 +228,23 @@ export function ChatConversation({
               onOpenCitation={handleOpenCitation}
             />
           </div>
-          <MessageInput
-            onSend={handleSend}
-            onStop={stream.stop}
-            isStreaming={stream.streaming}
-            autoFocus
-          />
+          <div className="shrink-0">
+            <MessageInput
+              onSend={handleSend}
+              onStop={stream.stop}
+              isStreaming={stream.streaming}
+              autoFocus
+            />
+          </div>
         </div>
 
-        {/* Source viewer — split on desktop, fullscreen overlay on mobile */}
+        {/* Source viewer — 50% split on md+, stacked panel on small screens */}
         {openedSource && (
           <div
             className={cn(
-              "flex flex-col border-l border-border-subtle bg-surface-2",
-              // Desktop split-view
-              "md:relative md:basis-1/2 md:min-w-105 md:max-w-[60%]",
-              // Mobile fullscreen overlay
-              "fixed inset-0 z-40 md:static md:z-auto md:inset-auto"
+              "flex min-h-0 min-w-0 flex-1 flex-col border-border-subtle bg-surface-2",
+              "border-t md:border-t-0 md:border-l",
+              "md:w-1/2 md:max-w-[50%] md:basis-1/2 md:shrink-0"
             )}
             data-testid="source-viewer-panel"
           >
@@ -239,6 +252,7 @@ export function ChatConversation({
               documentId={openedSource.documentId}
               initialPage={openedSource.pageNumber}
               sourceTitle={openedSource.sourceTitle}
+              highlightChunkId={openedSource.chunkId}
               onClose={handleCloseSource}
             />
           </div>

@@ -76,8 +76,8 @@ export function MessageInput({
   }
 
   return (
-    <div className="border-t border-border-subtle bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70">
-      <div className="mx-auto w-full px-6 sm:px-10 py-4">
+    <div className="shrink-0 border-t border-border-subtle bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70">
+      <div className="mx-auto w-full max-w-3xl px-6 sm:px-10 py-4">
         <div
           className={cn(
             "relative rounded-2xl border border-border-strong bg-surface-3",

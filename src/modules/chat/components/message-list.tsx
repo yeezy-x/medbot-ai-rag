@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { type RefObject, useMemo } from "react";
 import { useAutoScroll } from "@/hooks/use-auto-scroll";
 import { MessageItem } from "./message-item";
 import { ThinkingIndicator } from "./thinking-indicator";
@@ -16,6 +16,7 @@ interface MessageListProps {
   streamingCitations?: CitationDisplay[];
   onRegenerate?: () => void;
   onOpenCitation?: (c: CitationDisplay) => void;
+  scrollContainerRef?: RefObject<HTMLElement | null>;
 }
 
 /**
@@ -30,6 +31,7 @@ export function MessageList({
   streamingCitations,
   onRegenerate,
   onOpenCitation,
+  scrollContainerRef,
 }: MessageListProps) {
   const sentinelDep = useMemo(
     () =>
@@ -38,7 +40,7 @@ export function MessageList({
       }`,
     [messages.length, pendingUserMessage, streaming, streamingContent]
   );
-  const sentinelRef = useAutoScroll(sentinelDep);
+  const sentinelRef = useAutoScroll(sentinelDep, scrollContainerRef);
 
   return (
     <div className="flex justify-center">
@@ -46,7 +48,9 @@ export function MessageList({
         role="log"
         aria-live="polite"
         aria-relevant="additions"
-        className={cn("w-full max-w-3xl px-6 sm:px-10 py-6 space-y-6")}
+        className={cn(
+          "w-full max-w-3xl px-6 sm:px-10 py-6 pb-10 space-y-6"
+        )}
         data-testid="message-list"
       >
         {messages.map((message, idx) => (

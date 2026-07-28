@@ -15,11 +15,13 @@ export default async function ChatPage() {
   const user = await requireUser();
  
   return (
-    <div className="flex h-full flex-col">
-      <div className="flex-1 overflow-y-auto">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
         <EmptyState userName={user.name ?? undefined} />
       </div>
-      <ChatComposerLauncher />
+      <div className="shrink-0">
+        <ChatComposerLauncher />
+      </div>
     </div>
   );
 }

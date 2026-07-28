@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
 import {
   ChevronLeft,
@@ -15,6 +15,11 @@ import {
 } from "lucide-react";
 import { IconButton } from "@/components/ui/icon-button";
 import { cn } from "@/lib/utils";
+import {
+  clearCitationHighlights,
+  highlightCitationPassage,
+  scrollCitationHighlightIntoView,
+} from "@/modules/chat/lib/pdf-citation-highlight";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 
@@ -31,7 +36,13 @@ interface SourceViewerProps {
   documentId: string;
   initialPage: number;
   sourceTitle: string;
+  highlightChunkId?: string;
   onClose: () => void;
+}
+
+interface ChunkHighlight {
+  content: string;
+  pageNumber: number;
 }
 
 const MIN_SCALE = 0.6;
@@ -42,6 +53,7 @@ export function SourceViewer({
   documentId,
   initialPage,
   sourceTitle,
+  highlightChunkId,
   onClose,
 }: SourceViewerProps) {
   const [numPages, setNumPages] = useState<number | null>(null);
@@ -49,15 +61,70 @@ export function SourceViewer({
   const [scale, setScale] = useState(1.0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chunkHighlight, setChunkHighlight] = useState<ChunkHighlight | null>(
+    null
+  );
+  const [highlightApplied, setHighlightApplied] = useState(false);
   const pageInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const pageWrapRef = useRef<HTMLDivElement>(null);
 
   const src = useMemo(() => `/api/documents/${documentId}`, [documentId]);
+
+  useEffect(() => {
+    if (!highlightChunkId) {
+      setChunkHighlight(null);
+      setHighlightApplied(false);
+      return;
+    }
+    let cancelled = false;
+    setHighlightApplied(false);
+    fetch(`/api/chunks/${highlightChunkId}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Chunk fetch failed");
+        return res.json() as Promise<{
+          success: boolean;
+          data: { content: string; pageNumber: number | null };
+        }>;
+      })
+      .then((json) => {
+        if (cancelled || !json.success) return;
+        setChunkHighlight({
+          content: json.data.content,
+          pageNumber: json.data.pageNumber ?? initialPage,
+        });
+      })
+      .catch(() => {
+        if (!cancelled) setChunkHighlight(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [highlightChunkId, initialPage]);
+
+  const applyCitationHighlight = useCallback(() => {
+    const wrap = pageWrapRef.current;
+    if (!wrap || !chunkHighlight) return;
+    if (page !== chunkHighlight.pageNumber) {
+      clearCitationHighlights(wrap);
+      setHighlightApplied(false);
+      return;
+    }
+    const ok = highlightCitationPassage(wrap, chunkHighlight.content);
+    setHighlightApplied(ok);
+    if (ok) {
+      scrollCitationHighlightIntoView(wrap, containerRef.current);
+    }
+  }, [chunkHighlight, page]);
 
   // Whenever a new citation is opened, jump to the new page.
   useEffect(() => {
     if (initialPage) queueMicrotask(() => setPage(initialPage));
-  }, [initialPage, documentId]);
+  }, [initialPage, documentId, highlightChunkId]);
+
+  useEffect(() => {
+    applyCitationHighlight();
+  }, [applyCitationHighlight, scale, loading]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -206,6 +273,21 @@ export function SourceViewer({
         </div>
       </div>
 
+      {chunkHighlight && page === chunkHighlight.pageNumber && (
+        <div
+          className="border-b border-brand/25 bg-brand-muted/40 px-4 py-2 text-[0.75rem] text-muted-foreground"
+          data-testid="citation-highlight-banner"
+        >
+          <span className="font-medium text-brand">
+            {highlightApplied ? "Citation highlighted" : "Locating citation on this page…"}
+          </span>
+          <span className="mx-2 text-border-strong" aria-hidden>
+            ·
+          </span>
+          <span className="line-clamp-2">{chunkHighlight.content}</span>
+        </div>
+      )}
+
       {/* Document */}
       <div
         ref={containerRef}
@@ -240,19 +322,26 @@ export function SourceViewer({
           loading=""
           className="flex justify-center"
         >
-          <Page
-            pageNumber={page}
-            scale={scale}
-            renderTextLayer
-            renderAnnotationLayer={false}
-            loading=""
-            className={cn(
-              "shadow-2xl shadow-black/40",
-              "[&_.react-pdf__Page__canvas]:rounded-md",
-              "[&_.react-pdf__Page__canvas]:ring-1",
-              "[&_.react-pdf__Page__canvas]:ring-border-subtle"
-            )}
-          />
+          <div ref={pageWrapRef} className="relative">
+            <Page
+              pageNumber={page}
+              scale={scale}
+              renderTextLayer
+              renderAnnotationLayer={false}
+              loading=""
+              onRenderTextLayerSuccess={applyCitationHighlight}
+              className={cn(
+                "shadow-2xl shadow-black/40",
+                "[&_.react-pdf__Page__canvas]:rounded-md",
+                "[&_.react-pdf__Page__canvas]:ring-1",
+                "[&_.react-pdf__Page__canvas]:ring-border-subtle",
+                chunkHighlight &&
+                  page === chunkHighlight.pageNumber &&
+                  highlightApplied &&
+                  "[&_.react-pdf__Page__canvas]:ring-2 [&_.react-pdf__Page__canvas]:ring-brand/50"
+              )}
+            />
+          </div>
         </Document>
       </div>
     </div>

@@ -168,8 +168,7 @@
     -moz-osx-font-smoothing: grayscale;
   }
   body {
-    height: 100%;
-    overflow: hidden;
+    min-height: 100%;
     @apply bg-background text-foreground;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
     text-rendering: optimizeLegibility;
@@ -330,6 +329,14 @@
   animation: pulse-cursor 900ms ease-in-out infinite;
   color: var(--brand);
   font-weight: 300;
+}
+
+/* Citation passage highlight in PDF text layer (react-pdf) */
+.citation-highlight {
+  background: color-mix(in oklch, var(--brand), transparent 62%) !important;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
 }
 
 /* Font-size preference (Settings page). Applied to <html>, so Tailwind's

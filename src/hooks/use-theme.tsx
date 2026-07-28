@@ -15,14 +15,17 @@ const EVENT_NAME = "medbot:theme-change";
  * this hook keeps subsequent client-side toggles + cross-tab sync in sync
  * with that script.
  */
+function readAppliedTheme(): Theme {
+  if (typeof document === "undefined") return "dark";
+  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+}
+
 export function useTheme(): [Theme, (next: Theme) => void] {
-  // Reflect whatever the blocking inline script already applied — avoids
-  // a mismatched flash between the script's choice and React's initial
-  // "dark" default above.
-  const appliedTheme = document.documentElement.classList.contains("dark") ? "dark" : "light";
-  const [theme, setThemeState] = useState<Theme>(appliedTheme);
+  // Match <html className="dark"> on the server; sync from the inline script on the client.
+  const [theme, setThemeState] = useState<Theme>("dark");
 
   useEffect(() => {
+    setThemeState(readAppliedTheme());
 
     function onChange(e: Event) {
       const detail = (e as CustomEvent<Theme>).detail;
