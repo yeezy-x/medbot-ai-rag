@@ -1,0 +1,175 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> medbot@0.1.0 bench:retrieval
+> tsx -r dotenv/config benchmarks/run-retrieval.ts
+
+
+========== RETRIEVAL BENCHMARK ==========
+
+Iterations per query: 5
+topK=5, pool=20
+
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 0,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 16,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 16,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 16,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 16,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 16,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+--- retrieve: What are the symptoms of diabetes?… ---
+┌─────────┬────────┐
+│ (index) │ Values │
+├─────────┼────────┤
+│ count   │ 5      │
+│ minMs   │ 192.91 │
+│ meanMs  │ 213.5  │
+│ p50Ms   │ 200.97 │
+│ p95Ms   │ 254.89 │
+│ p99Ms   │ 254.89 │
+│ maxMs   │ 254.89 │
+└─────────┴────────┘
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 20,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 20,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 20,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 20,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 20,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+--- retrieve: How is hypertension treated?… ---
+┌─────────┬────────┐
+│ (index) │ Values │
+├─────────┼────────┤
+│ count   │ 5      │
+│ minMs   │ 180.49 │
+│ meanMs  │ 195.69 │
+│ p50Ms   │ 193.82 │
+│ p95Ms   │ 216.79 │
+│ p99Ms   │ 216.79 │
+│ maxMs   │ 216.79 │
+└─────────┴────────┘
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 1,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 1,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 1,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 1,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+========== VECTOR SEARCH ==========
+{
+  requestedTopK: 20,
+  returnedRows: 1,
+  filters: { documentId: null, chapter: null, section: null }
+}
+
+--- retrieve: What vaccines are recommended for adults?… ---
+┌─────────┬────────┐
+│ (index) │ Values │
+├─────────┼────────┤
+│ count   │ 5      │
+│ minMs   │ 178.2  │
+│ meanMs  │ 193.21 │
+│ p50Ms   │ 196.1  │
+│ p95Ms   │ 208.08 │
+│ p99Ms   │ 208.08 │
+│ maxMs   │ 208.08 │
+└─────────┴────────┘
+
+--- retrieve: ALL QUERIES ---
+┌─────────┬────────┐
+│ (index) │ Values │
+├─────────┼────────┤
+│ count   │ 15     │
+│ minMs   │ 178.2  │
+│ meanMs  │ 200.8  │
+│ p50Ms   │ 195.43 │
+│ p95Ms   │ 254.89 │
+│ p99Ms   │ 254.89 │
+│ maxMs   │ 254.89 │
+└─────────┴────────┘

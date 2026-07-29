@@ -12,7 +12,17 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "evaluate:retrieval": "tsx -r dotenv/config src/modules/knowledge/scripts/evaluate-retrieval.ts"
+    "evaluate:retrieval": "tsx -r dotenv/config src/modules/knowledge/scripts/evaluate-retrieval.ts",
+    "bench": "vitest bench",
+    "bench:embedding": "tsx -r dotenv/config benchmarks/run-embedding.ts",
+    "bench:retrieval": "tsx -r dotenv/config benchmarks/run-retrieval.ts",
+    "load:health": "tsx -r dotenv/config benchmarks/run-health-load.ts",
+    "load:chat": "tsx -r dotenv/config benchmarks/run-chat-load.ts",
+    "load:k6:health": "k6 run load/k6/health.js",
+    "load:k6:chat": "k6 run load/k6/chat.js",
+    "load:k6:stream": "k6 run load/k6/stream.js",
+    "perf:all": "tsx -r dotenv/config benchmarks/run-all.ts",
+    "perf:smoke": "tsx -r dotenv/config benchmarks/run-stream-smoke.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.2",
@@ -57,6 +67,7 @@
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autocannon": "^8.0.0",
     "babel-plugin-react-compiler": "1.0.0",
     "dotenv": "^17.4.2",
     "eslint": "^9",

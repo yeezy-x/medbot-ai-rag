@@ -50,31 +50,11 @@ export class RetrievalService {
         );
 
       const finalResults=acceptedResults.slice(0,request.topK);
-    // --- ADD THIS LOG ---
-      console.log(`[RAG FLOW] Retrieved ${searchResults.length} chunks for query: "${request.query}"`);
-      searchResults.forEach((res, i) => {
-        console.log(`  Chunk ${i+1} (Score: ${res.score.toFixed(4)}): ${res.chunk.content.substring(0, 50)}...`);
-      });
-      console.log(
-      "\n========== RETRIEVAL =========="
-    );
-
-    console.log({
-      question:request.query,
-      candidatePoolSize,
-      retrieved:searchResults.length,
-      accepted:acceptedResults.length,
-      returned:finalResults.length,
-      minScore,
-    });
-  // --------------------
   // 3. Convert vector results into retrieval results
   const chunks =
     this.mapRetrievedChunks(
       finalResults
     );
-  console.log("Retrieved chunks:");
-  console.log(searchResults);
   // 4. Build citations
   const citations = this.buildCitations(chunks);
   return {

@@ -9,6 +9,7 @@ export default defineConfig({
 
     include: [
       "src/**/*.test.ts",
+      "benchmarks/**/*.bench.ts",
     ],
 
     coverage: {

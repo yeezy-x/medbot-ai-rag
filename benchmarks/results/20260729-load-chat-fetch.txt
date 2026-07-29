@@ -1,0 +1,17 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> medbot@0.1.0 load:chat
+> tsx -r dotenv/config benchmarks/run-chat-load.ts
+
+
+========== CHAT API LOAD (fetch) ==========
+
+{ baseUrl: 'http://127.0.0.1:3002', durationSec: 15, concurrency: 5 }
+┌────────────┬────────┐
+│ (index)    │ Values │
+├────────────┼────────┤
+│ iterations │ 145    │
+│ meanMs     │ 512    │
+│ p50Ms      │ 500    │
+│ p95Ms      │ 624    │
+└────────────┴────────┘

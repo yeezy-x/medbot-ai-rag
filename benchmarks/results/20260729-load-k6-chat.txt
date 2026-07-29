@@ -1,0 +1,441 @@
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: load/k6/chat.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 3 max VUs, 55s max duration (incl. graceful stop):
+              * default: 3 looping VUs for 25s (gracefulStop: 30s)
+
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+     █ setup
+
+       ✓ csrf status 200
+
+     checks.........................: 100.00% 1 out of 1
+     data_received..................: 1.6 kB  27 B/s
+     data_sent......................: 873 B   15 B/s
+     http_req_blocked...............: avg=789.22µs min=4.95µs   med=789.22µs max=1.57ms   p(90)=1.41ms   p(95)=1.49ms  
+     http_req_connecting............: avg=619.37µs min=0s       med=619.37µs max=1.23ms   p(90)=1.11ms   p(95)=1.17ms  
+   ✓ http_req_duration..............: avg=156.24ms min=60.47ms  med=156.24ms max=252.01ms p(90)=232.86ms p(95)=242.44ms
+       { expected_response:true }...: avg=156.24ms min=60.47ms  med=156.24ms max=252.01ms p(90)=232.86ms p(95)=242.44ms
+   ✓ http_req_failed................: 0.00%   0 out of 2
+     http_req_receiving.............: avg=280.05µs min=220.39µs med=280.05µs max=339.72µs p(90)=327.78µs p(95)=333.75µs
+     http_req_sending...............: avg=177.36µs min=96.6µs   med=177.36µs max=258.11µs p(90)=241.96µs p(95)=250.04µs
+     http_req_tls_handshaking.......: avg=0s       min=0s       med=0s       max=0s       p(90)=0s       p(95)=0s      
+     http_req_waiting...............: avg=155.78ms min=59.87ms  med=155.78ms max=251.7ms  p(90)=232.51ms p(95)=242.1ms 
+     http_reqs......................: 2       0.033332/s
+     vus............................: 0       min=0      max=0
+     vus_max........................: 3       min=3      max=3
+
+
+Run       [ 100% ] setup()
+default   [   0% ]
+time="2026-07-29T12:50:55Z" level=error msg="setup() execution timed out after 60 seconds" hint="You can increase the time limit via the setupTimeout option"
+
+         /\      Grafana   /‾‾/  
+    /\  /  \     |\  __   /  /   
+   /  \/    \    | |/ /  /   ‾‾\ 
+  /          \   |   (  |  (‾)  |
+ / __________ \  |_|\_\  \_____/ 
+
+     execution: local
+        script: load/k6/chat.js
+        output: -
+
+     scenarios: (100.00%) 1 scenario, 3 max VUs, 50s max duration (incl. graceful stop):
+              * default: 3 looping VUs for 20s (gracefulStop: 30s)
+
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+
+Run       [ 100% ] setup()
+default   [   0% ]
+time="2026-07-29T12:54:16Z" level=warning msg="Request Failed" error="Post \"http://localhost:3000\": request timeout"
+
+     █ setup
+
+       ✓ csrf status 200
+       ✗ login status 2xx
+        ↳  0% — ✓ 0 / ✗ 1
+
+     checks.........................: 50.00% 1 out of 2
+     data_received..................: 1.6 kB 27 B/s
+     data_sent......................: 873 B  15 B/s
+     http_req_blocked...............: avg=348.56µs min=3.31µs  med=324.34µs max=718.02µs p(90)=639.29µs p(95)=678.65µs
+     http_req_connecting............: avg=242.48µs min=0s      med=164.06µs max=563.39µs p(90)=483.52µs p(95)=523.46µs
+   ✗ http_req_duration..............: avg=20.01s   min=35.38ms med=258.52ms max=59.74s   p(90)=47.84s   p(95)=53.79s  
+       { expected_response:true }...: avg=146.95ms min=35.38ms med=146.95ms max=258.52ms p(90)=236.21ms p(95)=247.37ms
+   ✗ http_req_failed................: 33.33% 1 out of 3
+     http_req_receiving.............: avg=209.85µs min=0s      med=244.3µs  max=385.24µs p(90)=357.05µs p(95)=371.15µs
+     http_req_sending...............: avg=84.47µs  min=21.14µs med=61.59µs  max=170.69µs p(90)=148.87µs p(95)=159.78µs
+     http_req_tls_handshaking.......: avg=0s       min=0s      med=0s       max=0s       p(90)=0s       p(95)=0s      
+     http_req_waiting...............: avg=20.01s   min=34.82ms med=258.26ms max=59.74s   p(90)=47.84s   p(95)=53.79s  
+     http_reqs......................: 3      0.049967/s
+     vus............................: 0      min=0      max=0
+     vus_max........................: 3      min=3      max=3
+
+
+Run       [ 100% ] setup()
+default   [   0% ]
+time="2026-07-29T12:54:16Z" level=error msg="Error: Login failed — seed a user (npm run seed) or set LOAD_TEST_EMAIL / LOAD_TEST_PASSWORD\n\tat setup (file:///home/yeezy/projects/100xDevs/Projects/medbot/load/k6/chat.js:26:11(13))\n" hint="script exception"
