@@ -45,13 +45,18 @@ export function CitationList({ citations, onOpen }: CitationListProps) {
         )}
       >
         {visible.map((citation, idx) => (
-          <CitationCard
+          <div
             key={citation.id}
-            index={idx + 1}
-            citation={citation}
-            onOpen={onOpen}
-            className={expanded ? "w-full" : "snap-start"}
-          />
+            id={`citation-${idx + 1}`}
+            className="scroll-mt-28 shrink-0"
+          >
+            <CitationCard
+              index={idx + 1}
+              citation={citation}
+              onOpen={onOpen}
+              className={expanded ? "w-full" : "snap-start"}
+            />
+          </div>
         ))}
       </div>
       {showToggle && (

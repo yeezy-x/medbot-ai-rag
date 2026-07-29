@@ -11,30 +11,25 @@
 The repo is a well-organized **Next.js 16 (App Router) + React 19 + Tailwind v4 + shadcn/ui (`radix-nova` style) + NextAuth v5 + Prisma 7 + pgvector + Ollama** stack. Modules are cleanly separated (`src/modules/{auth,chat,dashboard,knowledge,marketing}`) with services, repositories, DTOs, schemas, and API layers.
 
 **What already works well**
-- Route groups are clean: `(marketing)`, `(auth)`, `(app)/{dashboard,chat,chat/[id]}`.
-- API routes are correct and RESTful (`/api/chats`, `/api/chats/[id]`, `/api/chats/[id]/messages`).
-- `ChatService.sendMessage()` already returns `{ answer, citations }` and persists citations to Postgres.
-- `ChatRepository.getConversation()` already `include: { citations: true }` — **citations are available on the server, they just aren't rendered.**
-- Design tokens (`globals.css`) already use a neutral OKLCH grayscale, sidebar tokens, and dark-mode variants — an excellent starting point.
-- `useAutoScroll` hook exists but is not used.
-- TanStack Query provider is wired via `QueryProvider`.
+- Route groups are clean: `(marketing)`, `(auth)`, `(app)/{dashboard,chat,chat/[id],settings}`.
+- API routes are correct and RESTful (`/api/chats`, `/api/chats/[id]`, `/api/chats/[id]/messages`, streaming variant).
+- `ChatService.sendMessage()` returns `{ answer, citations }` and persists citations; conversation load includes citations for the UI.
+- Design tokens (`globals.css`) use neutral OKLCH grayscale, brand accent, sidebar tokens, prose styles, and dark-first via root layout.
+- Chat shell: collapsible sidebar, shared `ChatListProvider`, header rename/copy-link/delete, ⌘K command palette, mobile drawer.
+- Message surface: Markdown + GFM + highlighted code blocks, citation cards, inline `[n]` → scroll-to-citation, copy/regenerate/export/feedback actions, RAG metrics when present.
+- Landing: hero + feature strip + answer preview; dashboard: quick actions + recent chat cards.
+- Loading states: `chat/[id]/loading`, `settings/loading`; `settings/error` with retry.
+- TanStack Query provider, `useAutoScroll` wired in conversation view, UTC-safe date grouping in sidebar.
 
-**What is missing or under-built**
-1. **Chat UI is a v0 sketch.** `MessageItem` is a plain bubble with `whitespace-pre-wrap` — no markdown, no code blocks, no citations, no timestamps, no actions (copy/regen).
-2. **Sidebar is functional but visually flat.** Emoji `💬` in `ChatItem`, arrow `↑` in `MessageInput`, no search, no rename, no delete, no active-item styling beyond `bg-muted`.
-3. **Bug in `src/app/(app)/chat/layout.tsx`:** a `<div className="border-t p-4">…user footer…</div>` is rendered **outside** the sidebar (between sidebar and main), producing a broken layout.
-4. **Empty state uses raw emoji (👋) and a large "M" tile** — inconsistent with the intended Linear/Vercel aesthetic.
-5. **Landing page is a bare Hero** — no product story, no screenshot, no proof-of-tech.
-6. **No markdown / no citations UI.**
-7. **Type mismatch:** `sendMessage()` client is typed `SuccessResponse<Message>`, but the endpoint returns `SuccessResponse<{ answer, citations }>` (`SendMessageResponse`).
-8. **No dark class applied.** `.dark` tokens exist but `<html>` never receives the class → dark-mode never activates.
-9. **`chat/[id]/page.tsx` drops citations on serialization** — even though the DB returns them.
-10. **No skeletons on message send**, no auto-scroll wiring, no keyboard shortcuts, no error toasts, no mobile responsiveness.
-11. **Icons: mix of emoji + Unicode arrows.** Should be `lucide-react` (already in deps).
-12. **`chat-layout.tsx` file exists but is empty** — dead code.
-13. **Two `ChatRepository` classes exist** (`src/repositories/chat.repository.ts` and `src/modules/chat/repositories/chat.repository.ts`). Not a frontend issue, flagged for tech-debt awareness.
+**Remaining gaps / tech debt (frontend)**
+1. **No dedicated `citation-hover-preview.tsx`** — preview UX lives in `citation-card` (optional split per design doc).
+2. **Edit-prompt dialog & top-level export menu** — not built; per-message markdown export exists on `MessageActions`.
+3. **`chat/[id]/error.tsx`** — relies on parent `chat/error.tsx` unless a thread-specific error UI is needed.
+4. **Streaming polish** — SSE route exists; UX may still need abort/regenerate wiring end-to-end.
+5. **Two `ChatRepository` classes** (`src/repositories/…` vs `src/modules/chat/repositories/…`) — backend tech debt, not blocking UI.
+6. **F6–F8** (retrieval inspector, PDF viewer enhancements, preferences API) — later phases in §2.
 
-**Bottom line:** the plumbing is 80% there. What the app lacks is the *surface* — the visual, interaction, and information-density layer that makes a RAG demo *look* like a product.
+**Bottom line:** core product surface (chat chrome, citations, marketing, dashboard, primitives) is in place. Next recruiter-visible wins are streaming polish, source/PDF inspector depth, and retrieval observability (F6–F8).
 
 ---
 
@@ -203,6 +198,8 @@ Each phase lists: **files to create · files to modify · components/hooks to bu
 - **Backend additions required:** export (server-side markdown/PDF export) is optional; client-side markdown export ships immediately.
 - **Ships without backend:** ✅ mostly.
 
+**✅ SHIPPED.** Command palette with chat search + recent prompts; `export-menu` + per-message export/share; `edit-prompt-dialog` + toolbar; `use-prompt-history`; continue-after-stop via `incomplete` messages; global `use-chat-shortcuts` (⌘⏎ new chat, ⌘/ focus composer).
+
 ---
 
 ### F11 — User settings
@@ -211,6 +208,8 @@ Each phase lists: **files to create · files to modify · components/hooks to bu
   - **F11.1** — `GET/PUT /api/users/me/preferences` (JSON blob on `User` — or store client-side in `localStorage` first, migrate later).
 - **Ships without backend:** ✅ if we start with localStorage.
 
+**✅ SHIPPED.** Settings route with modular `src/modules/settings/components/*` panels (theme, font size, dev mode, retrieval sliders, model placeholder); preferences in localStorage.
+
 ---
 
 ### F12 — Mobile responsiveness
@@ -218,12 +217,16 @@ Each phase lists: **files to create · files to modify · components/hooks to bu
 - **Backend additions required:** none.
 - **Ships without backend:** ✅.
 
+**✅ SHIPPED.** `MobileSidebar` sheet; `SuggestionBottomSheet` on empty chat; 44px composer/actions on `max-md`; dashboard 2-column from `md` breakpoint.
+
 ---
 
 ### F13 — Polish & accessibility
 - Skeletons on every data-fetch route, error boundaries per route group, ARIA labels on message list / composer / sidebar, keyboard nav (⌘K, ⌘⏎, ⌘/), focus rings using accent token, prefers-reduced-motion respect, Lighthouse pass.
 - **Backend additions required:** none.
 - **Ships without backend:** ✅.
+
+**✅ SHIPPED.** App/chat/settings/dashboard/auth loading + error routes; ARIA on message list, composer, sidebar search, header; global `:focus-visible` brand ring; reduced-motion for animations; keyboard shortcuts documented in UI.
 
 ---
 

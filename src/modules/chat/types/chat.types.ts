@@ -28,6 +28,8 @@ export interface Message {
   createdAt: string;
   citations?: CitationDisplay[];
   metrics?: MessageMetrics;
+  /** Set when generation was stopped before completion. */
+  incomplete?: boolean;
 }
 
 export interface ChatRequest {

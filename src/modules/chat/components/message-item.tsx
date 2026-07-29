@@ -9,6 +9,7 @@ import { MessageActions } from "./message-actions";
 import type { CitationDisplay } from "../types/citation.types";
 import type { MessageMetrics } from "../types/chat.types";
 import { RagMetrics } from "./rag-metrics";
+import { linkifyCitationMarkers } from "@/modules/chat/lib/citation-inline";
 
 type MessageRole = "USER" | "ASSISTANT" | "SYSTEM";
 
@@ -21,6 +22,7 @@ interface MessageItemProps {
   pending?: boolean;
   streaming?: boolean;
   onRegenerate?: () => void;
+  onContinue?: () => void;
   onOpenCitation?: (c: CitationDisplay) => void;
   children?: React.ReactNode;
 }
@@ -34,6 +36,7 @@ export function MessageItem({
   pending,
   streaming,
   onRegenerate,
+  onContinue,
   onOpenCitation,
   children,
 }: MessageItemProps) {
@@ -81,6 +84,7 @@ export function MessageItem({
           content={content}
           pending={pending}
           streaming={streaming}
+          citationCount={citations?.length ?? 0}
         />
 
         {!isUser && citations && citations.length > 0 && (
@@ -92,7 +96,7 @@ export function MessageItem({
         )}
 
         {!isUser && !streaming && !pending && content && (
-          <MessageActions content={content} onRegenerate={onRegenerate} />
+          <MessageActions content={content} onRegenerate={onRegenerate} onContinue={onContinue} />
         )}
       </div>
     </article>
@@ -132,11 +136,13 @@ function MessageBody({
   content,
   pending,
   streaming,
+  citationCount = 0,
 }: {
   role: MessageRole;
   content: string;
   pending?: boolean;
   streaming?: boolean;
+  citationCount?: number;
 }) {
   if (role === "USER") {
     if (!content) return null;
@@ -152,9 +158,10 @@ function MessageBody({
     );
   }
   if (!content) return null;
+  const markdown = linkifyCitationMarkers(content, citationCount);
   return (
     <div className={cn(streaming && "streaming-cursor")}>
-      <Markdown content={content} />
+      <Markdown content={markdown} />
     </div>
   );
 }

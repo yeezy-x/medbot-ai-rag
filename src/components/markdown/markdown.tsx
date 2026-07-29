@@ -26,7 +26,27 @@ function toPlainText(children: React.ReactNode): string {
 }
 
 const components: Components = {
-  a: ({ href, children, ...props }) => (
+  a: ({ href, children, ...props }) => {
+    if (href?.startsWith("#citation-")) {
+      const id = href.slice(1);
+      return (
+        <a
+          href={href}
+          className="inline-flex align-super text-[0.75em] font-semibold text-brand no-underline hover:underline"
+          onClick={(e) => {
+            e.preventDefault();
+            document.getElementById(id)?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            });
+          }}
+          {...props}
+        >
+          {children}
+        </a>
+      );
+    }
+    return (
     <a
       href={href}
       target="_blank"
@@ -37,7 +57,8 @@ const components: Components = {
       {children}
       <ExternalLink className="size-3 translate-y-px opacity-60" />
     </a>
-  ),
+    );
+  },
   pre: ({ children }) => <>{children}</>,
   code: ({ className, children, ...props }) => {
     const match = /language-(\w+)/.exec(className || "");

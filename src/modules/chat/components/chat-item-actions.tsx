@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 
 import {
   DropdownMenu,
@@ -11,56 +10,22 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { deleteChat, renameChat } from "@/modules/chat/api/chat.api";
 import { RenameChatDialog } from "./rename-chat-dialog";
 import { cn } from "@/lib/utils";
+import type { ChatListItem } from "@/modules/chat/hooks/use-chat-list";
 
 interface ChatItemActionsProps {
-  chatId: string;
-  currentTitle: string;
-  onOptimisticRename: (chatId: string, newTitle: string) => void;
-  onOptimisticDelete: (chatId: string) => void;
-  onRevertRename: (chatId: string, previousTitle: string) => void;
-  onRevertDelete: (chatId: string) => void;
+  chat: ChatListItem;
+  commitRename: (chatId: string, title: string, previous: string) => Promise<void>;
+  commitDelete: (chatId: string, snapshot: ChatListItem) => Promise<void>;
 }
 
-/**
- * "…" menu on each sidebar chat item. Rename opens a dialog, delete does an
- * optimistic remove + sonner undo toast. On error we roll back and toast an
- * error.
- */
 export function ChatItemActions({
-  chatId,
-  currentTitle,
-  onOptimisticRename,
-  onOptimisticDelete,
-  onRevertRename,
-  onRevertDelete,
+  chat,
+  commitRename,
+  commitDelete,
 }: ChatItemActionsProps) {
   const [renameOpen, setRenameOpen] = useState(false);
-
-  async function handleRename(next: string) {
-    const previous = currentTitle;
-    onOptimisticRename(chatId, next);
-    try {
-      await renameChat(chatId, next);
-      toast.success("Renamed");
-    } catch (err) {
-      onRevertRename(chatId, previous);
-      toast.error(err instanceof Error ? err.message : "Rename failed");
-    }
-  }
-
-  async function handleDelete() {
-    onOptimisticDelete(chatId);
-    try {
-      await deleteChat(chatId);
-      toast.success("Conversation deleted");
-    } catch (err) {
-      onRevertDelete(chatId);
-      toast.error(err instanceof Error ? err.message : "Delete failed");
-    }
-  }
 
   return (
     <>
@@ -70,13 +35,10 @@ export function ChatItemActions({
             type="button"
             onClick={(e) => e.preventDefault()}
             aria-label="Chat options"
-            data-testid={`sidebar-chat-actions-${chatId}`}
+            data-testid={`sidebar-chat-actions-${chat.id}`}
             className={cn(
               "ml-auto flex size-6 shrink-0 items-center justify-center rounded-md",
               "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
-              // Below md there's no reliable hover state (touch), so the
-              // trigger stays visible at all times. At md+ (pointer devices)
-              // it only reveals on hover/focus/open, matching desktop density.
               "max-md:visible md:invisible md:focus-visible:visible md:group-hover:visible md:aria-expanded:visible"
             )}
           >
@@ -89,16 +51,16 @@ export function ChatItemActions({
               e.preventDefault();
               setRenameOpen(true);
             }}
-            data-testid={`sidebar-chat-rename-${chatId}`}
+            data-testid={`sidebar-chat-rename-${chat.id}`}
           >
             <Pencil className="size-3.5" />
             Rename
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
-            onClick={handleDelete}
+            onClick={() => void commitDelete(chat.id, chat)}
             className="text-destructive focus:text-destructive"
-            data-testid={`sidebar-chat-delete-${chatId}`}
+            data-testid={`sidebar-chat-delete-${chat.id}`}
           >
             <Trash2 className="size-3.5" />
             Delete
@@ -109,8 +71,8 @@ export function ChatItemActions({
       <RenameChatDialog
         open={renameOpen}
         onOpenChange={setRenameOpen}
-        initialTitle={currentTitle}
-        onSubmit={handleRename}
+        initialTitle={chat.title}
+        onSubmit={(next) => void commitRename(chat.id, next, chat.title)}
       />
     </>
   );

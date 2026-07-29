@@ -318,6 +318,24 @@
   animation: fade-up 200ms ease-out both;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up,
+  .streaming-cursor::after {
+    animation: none !important;
+  }
+}
+
+/* Accessible focus — brand accent ring (F13) */
+:focus-visible {
+  outline: 2px solid color-mix(in oklch, var(--brand), transparent 20%);
+  outline-offset: 2px;
+}
+
+textarea:focus-visible,
+input:focus-visible {
+  outline: none;
+}
+
 /* Blinking cursor for streaming (F3 hook) */
 @keyframes pulse-cursor {
   0%, 100% { opacity: 1; }

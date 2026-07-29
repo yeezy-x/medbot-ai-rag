@@ -7,10 +7,14 @@ import { MessageInput } from "@/components/message-input";
 import { MessageList } from "@/modules/chat/components/message-list";
 import { RetrievalInspector } from "@/modules/chat/components/retrieval-inspector";
 import { ChatHeaderActions } from "@/modules/chat/components/chat-header-actions";
+import { ConversationToolbar } from "@/modules/chat/components/conversation-toolbar";
+import { EditPromptDialog } from "@/modules/chat/components/edit-prompt-dialog";
 import { LazySourceViewer } from "@/modules/chat/components/source-viewer-lazy";
 import { useStreamMessage } from "@/hooks/use-stream-message";
 import { useDevMode } from "@/hooks/use-dev-mode";
 import { useRetrievalSettings } from "@/hooks/use-retrieval-settings";
+import { usePromptHistory } from "@/hooks/use-prompt-history";
+import { useChatListContext } from "@/modules/chat/context/chat-list-context";
 import { cn } from "@/lib/utils";
 import type { Message } from "@/modules/chat/types/chat.types";
 import type {
@@ -52,8 +56,11 @@ export function ChatConversation({
   const [lastDebug, setLastDebug] = useState<DebugPayload | null>(null);
   const [lastTotalMs, setLastTotalMs] = useState<number | undefined>(undefined);
   const [openedSource, setOpenedSource] = useState<OpenedSource | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
   const [devMode] = useDevMode();
   const [retrieval] = useRetrievalSettings();
+  const { push: pushPrompt } = usePromptHistory();
+  const { activeChat } = useChatListContext();
 
   const stream = useStreamMessage();
   const [, startTransition] = useTransition();
@@ -63,6 +70,7 @@ export function ChatConversation({
     async (message: string) => {
       setPendingUser(message);
       setLastUserMessage(message);
+      pushPrompt(message);
       try {
         const result = await stream.send(sessionId, message, {
           debug: devMode,
@@ -82,6 +90,7 @@ export function ChatConversation({
           content: result.answer,
           createdAt: new Date().toISOString(),
           citations: toDisplayCitations(sessionId, result.citations),
+          incomplete: result.aborted,
           metrics: {
             totalDurationMs: result.metrics.totalDurationMs,
             retrievalDurationMs: result.metrics.retrievalDurationMs,
@@ -93,6 +102,11 @@ export function ChatConversation({
         };
         setMessages((prev) => [...prev, userMsg, assistantMsg]);
         setPendingUser(null);
+        if (result.aborted) {
+          toast.message("Generation stopped", {
+            description: "You can continue from the partial answer.",
+          });
+        }
         if (result.debug) setLastDebug(result.debug);
         setLastTotalMs(result.metrics.totalDurationMs);
         stream.reset();
@@ -105,7 +119,15 @@ export function ChatConversation({
         );
       }
     },
-    [sessionId, stream, router, devMode, retrieval.topK, retrieval.minScore]
+    [
+      sessionId,
+      stream,
+      router,
+      devMode,
+      retrieval.topK,
+      retrieval.minScore,
+      pushPrompt,
+    ]
   );
 
   const handleSend = useCallback(
@@ -127,6 +149,44 @@ export function ChatConversation({
     setPendingUser(lastUserMessage);
     void doStream(lastUserMessage);
   }, [lastUserMessage, stream.streaming, doStream]);
+
+  const lastUserContent = useCallback(() => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === "USER") return messages[i].content;
+    }
+    return null;
+  }, [messages]);
+
+  const handleEditLastPrompt = useCallback(() => {
+    const content = lastUserContent();
+    if (!content) return;
+    setEditOpen(true);
+  }, [lastUserContent]);
+
+  const handleEditSubmit = useCallback(
+    (next: string) => {
+      setMessages((prev) => {
+        let lastUserIdx = -1;
+        for (let i = prev.length - 1; i >= 0; i--) {
+          if (prev[i].role === "USER") {
+            lastUserIdx = i;
+            break;
+          }
+        }
+        if (lastUserIdx === -1) return prev;
+        return prev.slice(0, lastUserIdx);
+      });
+      void doStream(next);
+    },
+    [doStream]
+  );
+
+  const handleContinue = useCallback(() => {
+    if (stream.streaming) return;
+    void doStream(
+      "Continue your previous answer from where you left off. Do not repeat earlier content."
+    );
+  }, [stream.streaming, doStream]);
 
   const handleOpenCitation = useCallback((c: CitationDisplay) => {
     setOpenedSource({
@@ -194,6 +254,21 @@ export function ChatConversation({
         onOpenInspector={() => setInspectorOpen(true)}
       />
 
+      <ConversationToolbar
+        title={activeChat?.title ?? "Conversation"}
+        messages={messages}
+        streaming={stream.streaming}
+        canEditLastPrompt={Boolean(lastUserContent())}
+        onEditLastPrompt={handleEditLastPrompt}
+      />
+
+      <EditPromptDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        initialValue={lastUserContent() ?? ""}
+        onSubmit={handleEditSubmit}
+      />
+
       <div
         className={cn(
           "flex min-h-0 flex-1 w-full overflow-hidden",
@@ -224,6 +299,9 @@ export function ChatConversation({
                 !stream.streaming && lastUserMessage
                   ? handleRegenerate
                   : undefined
+              }
+              onContinue={
+                !stream.streaming ? handleContinue : undefined
               }
               onOpenCitation={handleOpenCitation}
             />

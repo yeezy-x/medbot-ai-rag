@@ -26,6 +26,9 @@ Frontend-only redesign of an existing Next.js 16 + React 19 + PostgreSQL/pgvecto
 5. Every interactive element carries `data-testid`.
 6. Ships incrementally — every commit leaves the app in a working state.
 
+## Agent workflow (user preference)
+- **Explain before implement**: Propose approach, scope, and affected files first; wait for user go-ahead before editing code (unless they explicitly ask to implement immediately).
+
 ## What's implemented (2026-01-21)
 ### Roadmap document
 - `docs/FRONTEND_ROADMAP.md` — full phase-by-phase plan (F0 → F13) tailored to this repo, with per-phase file lists, backend-additions-required table, and priority ordering.

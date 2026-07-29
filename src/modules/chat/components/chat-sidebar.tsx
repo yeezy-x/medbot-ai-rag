@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useRef, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Braces,
   LogOut,
+  PanelLeft,
+  PanelLeftClose,
   Plus,
   Search,
   Settings,
@@ -16,6 +18,7 @@ import { signOut } from "next-auth/react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { Input } from "@/components/ui/input";
 import { Kbd } from "@/components/ui/kbd";
 import {
@@ -30,6 +33,7 @@ import {
 import { createChat } from "@/modules/chat/api/chat.api";
 import { groupByDate, initials, relativeTime } from "@/lib/format";
 import { useDevMode } from "@/hooks/use-dev-mode";
+import { useChatListContext } from "@/modules/chat/context/chat-list-context";
 import { ChatItemActions } from "./chat-item-actions";
 import { cn } from "@/lib/utils";
 
@@ -41,12 +45,13 @@ interface Chat {
 }
 
 interface SidebarProps {
-  initialChats: Chat[];
   user: {
     id: string;
     name: string | null;
     email: string | null;
   };
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
 /**
@@ -55,31 +60,44 @@ interface SidebarProps {
  * instead. Keep all sidebar logic in `SidebarContent`; this is just the
  * desktop presentation wrapper.
  */
-export function Sidebar({ initialChats, user }: SidebarProps) {
+export function Sidebar({
+  user,
+  collapsed = false,
+  onToggleCollapse,
+}: SidebarProps) {
   return (
     <aside
-      className="hidden md:flex w-65 shrink-0 flex-col bg-sidebar text-sidebar-foreground"
+      className={cn(
+        "hidden md:flex shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground",
+        "transition-[width] duration-200 ease-out motion-reduce:transition-none",
+        collapsed ? "w-0 border-r-0" : "w-65"
+      )}
       data-testid="chat-sidebar"
+      data-collapsed={collapsed ? "true" : "false"}
+      aria-hidden={collapsed}
     >
-      <SidebarContent initialChats={initialChats} user={user} />
+      <SidebarContent user={user} onToggleCollapse={onToggleCollapse} />
     </aside>
   );
 }
 
 export function SidebarContent({
-  initialChats,
   user,
   onNavigate,
+  onToggleCollapse,
 }: SidebarProps & { onNavigate?: () => void }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [chats, setChats] = useState<Chat[]>(initialChats);
+  const {
+    chats,
+    prependChat,
+    commitRename,
+    commitDelete,
+  } = useChatListContext();
   const [query, setQuery] = useState("");
   const [isPending, startTransition] = useTransition();
   const [creating, setCreating] = useState(false);
   const [devMode, setDevMode] = useDevMode();
-  // Stash removed chats so we can revert on API failure.
-  const lastDeletedRef = useRef<Map<string, Chat>>(new Map());
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -100,7 +118,7 @@ export function SidebarContent({
         createdAt: new Date(newChat.createdAt).toISOString(),
         updatedAt: new Date(newChat.updatedAt).toISOString(),
       };
-      setChats((prev) => [serialized, ...prev]);
+      prependChat(serialized);
       startTransition(() => {
         router.push(`/chat/${newChat.id}`);
         router.refresh();
@@ -113,45 +131,30 @@ export function SidebarContent({
     }
   }
 
-  const handleOptimisticRename = (chatId: string, next: string) => {
-    setChats((prev) =>
-      prev.map((c) => (c.id === chatId ? { ...c, title: next } : c))
-    );
-    startTransition(() => router.refresh());
-  };
-  const handleRevertRename = (chatId: string, previous: string) => {
-    setChats((prev) =>
-      prev.map((c) => (c.id === chatId ? { ...c, title: previous } : c))
-    );
-  };
-  const handleOptimisticDelete = (chatId: string) => {
-    const removed = chats.find((c) => c.id === chatId);
-    setChats((prev) => prev.filter((c) => c.id !== chatId));
-    if (pathname === `/chat/${chatId}`) {
-      startTransition(() => router.push("/chat"));
-    }
-    if (removed) lastDeletedRef.current.set(chatId, removed);
-  };
-  const handleRevertDelete = (chatId: string) => {
-    const previous = lastDeletedRef.current.get(chatId);
-    if (!previous) return;
-    setChats((prev) => [previous, ...prev]);
-    lastDeletedRef.current.delete(chatId);
-  };
-
   return (
     <div className="flex h-full min-h-0 w-full flex-col">
       {/* Brand */}
       <div className="flex items-center gap-2 px-4 py-3.5">
-        <div className="flex size-7 items-center justify-center rounded-md bg-brand text-brand-foreground shadow-sm">
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-md bg-brand text-brand-foreground shadow-sm">
           <Sparkles className="size-4" strokeWidth={2.2} />
         </div>
-        <div className="flex flex-col leading-tight">
+        <div className="flex min-w-0 flex-1 flex-col leading-tight">
           <span className="text-[0.85rem] font-semibold tracking-tight">MedBot</span>
           <span className="text-[0.65rem] uppercase tracking-wider text-muted-foreground">
             RAG · Gale Encyclopedia
           </span>
         </div>
+        {onToggleCollapse ? (
+          <IconButton
+            size="sm"
+            label="Collapse sidebar"
+            onClick={onToggleCollapse}
+            className="shrink-0 text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            data-testid="sidebar-collapse-button"
+          >
+            <PanelLeftClose />
+          </IconButton>
+        ) : null}
       </div>
 
       {/* New chat */}
@@ -176,6 +179,7 @@ export function SidebarContent({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search chats"
+          aria-label="Search chats"
           className="h-8 bg-transparent pl-8 text-[0.8rem] border-border-subtle"
           data-testid="sidebar-search-input"
         />
@@ -199,10 +203,8 @@ export function SidebarContent({
                     key={chat.id}
                     chat={chat}
                     active={pathname === `/chat/${chat.id}`}
-                    onOptimisticRename={handleOptimisticRename}
-                    onOptimisticDelete={handleOptimisticDelete}
-                    onRevertRename={handleRevertRename}
-                    onRevertDelete={handleRevertDelete}
+                    commitRename={commitRename}
+                    commitDelete={commitDelete}
                     onNavigate={onNavigate}
                   />
                 ))}
@@ -292,18 +294,14 @@ export function SidebarContent({
 function ChatSidebarItem({
   chat,
   active,
-  onOptimisticRename,
-  onOptimisticDelete,
-  onRevertRename,
-  onRevertDelete,
+  commitRename,
+  commitDelete,
   onNavigate,
 }: {
   chat: Chat;
   active: boolean;
-  onOptimisticRename: (chatId: string, newTitle: string) => void;
-  onOptimisticDelete: (chatId: string) => void;
-  onRevertRename: (chatId: string, previousTitle: string) => void;
-  onRevertDelete: (chatId: string) => void;
+  commitRename: (chatId: string, title: string, previous: string) => Promise<void>;
+  commitDelete: (chatId: string, snapshot: Chat) => Promise<void>;
   onNavigate?: () => void;
 }) {
   return (
@@ -332,12 +330,9 @@ function ChatSidebarItem({
         </span>
       </Link>
       <ChatItemActions
-        chatId={chat.id}
-        currentTitle={chat.title}
-        onOptimisticRename={onOptimisticRename}
-        onOptimisticDelete={onOptimisticDelete}
-        onRevertRename={onRevertRename}
-        onRevertDelete={onRevertDelete}
+        chat={chat}
+        commitRename={commitRename}
+        commitDelete={commitDelete}
       />
     </li>
   );

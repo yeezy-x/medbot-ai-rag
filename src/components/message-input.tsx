@@ -34,6 +34,15 @@ export function MessageInput({
   }, [autoFocus]);
 
   useEffect(() => {
+    function onFocusComposer() {
+      textareaRef.current?.focus();
+    }
+    window.addEventListener("medbot:focus-composer", onFocusComposer);
+    return () =>
+      window.removeEventListener("medbot:focus-composer", onFocusComposer);
+  }, []);
+
+  useEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
@@ -89,6 +98,7 @@ export function MessageInput({
         >
           <textarea
             ref={textareaRef}
+            id="medbot-composer"
             value={value}
             onChange={(e) => setValue(e.target.value.slice(0, HARD_LIMIT))}
             onKeyDown={handleKeyDown}
@@ -96,6 +106,7 @@ export function MessageInput({
             disabled={disabled}
             rows={1}
             aria-label="Message"
+            aria-describedby="medbot-composer-hints"
             data-testid="message-input-textarea"
             className={cn(
               "w-full resize-none bg-transparent",
@@ -109,7 +120,10 @@ export function MessageInput({
           />
 
           <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between px-3 pb-2">
-            <div className="pointer-events-auto flex items-center gap-2 text-[0.7rem] text-muted-foreground">
+            <div
+              id="medbot-composer-hints"
+              className="pointer-events-auto flex items-center gap-2 text-[0.7rem] text-muted-foreground"
+            >
               {isStreaming ? (
                 <span className="flex items-center gap-1 text-brand">
                   <Kbd className="border-brand/30 bg-brand-muted text-brand">
@@ -131,6 +145,14 @@ export function MessageInput({
                     <Kbd>⏎</Kbd>
                     <span>new line</span>
                   </span>
+                  <span aria-hidden className="hidden sm:inline text-border-strong">
+                    ·
+                  </span>
+                  <span className="hidden sm:flex items-center gap-1">
+                    <Kbd>⌘</Kbd>
+                    <Kbd>/</Kbd>
+                    <span>focus</span>
+                  </span>
                 </>
               )}
               <span
@@ -151,7 +173,8 @@ export function MessageInput({
                 aria-label="Stop generating"
                 data-testid="message-input-stop-button"
                 className={cn(
-                  "pointer-events-auto flex size-7 items-center justify-center rounded-md",
+                  "pointer-events-auto flex items-center justify-center rounded-md",
+                  "max-md:size-11 size-7",
                   "border border-brand/40 bg-brand-muted text-brand",
                   "transition-all duration-150 hover:brightness-110 active:scale-95"
                 )}
@@ -166,7 +189,8 @@ export function MessageInput({
                 aria-label="Send message"
                 data-testid="message-input-send-button"
                 className={cn(
-                  "pointer-events-auto flex size-7 items-center justify-center rounded-md",
+                  "pointer-events-auto flex items-center justify-center rounded-md",
+                  "max-md:size-11 size-7",
                   "transition-all duration-150",
                   canSend
                     ? "bg-brand text-brand-foreground hover:brightness-110 active:scale-95"

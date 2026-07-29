@@ -1,0 +1,18 @@
+---
+description: Explain the plan and get alignment before writing or changing code
+alwaysApply: true
+---
+
+# Explain first, implement second
+
+When the user asks for a feature, fix, or refactor:
+
+1. **Do not edit files or run destructive commands** until the user has seen a clear plan (unless they explicitly say "just do it", "implement now", or similar).
+2. **Start with a short explanation**: what you think is wrong or what we're building, proposed approach, files likely touched, and tradeoffs if any.
+3. **Wait for confirmation** (or answers to open questions) before implementing.
+4. **Exceptions** (still summarize briefly, but may proceed in the same turn):
+   - Pure questions / reviews with no code changes requested
+   - User message is only "yes", "go ahead", "implement", or approval of a plan you already gave
+   - Trivial one-line fixes the user already approved in the immediately prior message
+
+After approval, implement as discussed and note any small deviations.

@@ -9,6 +9,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { SuggestionBottomSheet } from "@/modules/chat/components/suggestion-bottom-sheet";
 
 interface EmptyStateProps {
   userName?: string;
@@ -79,6 +80,7 @@ export function EmptyState({ userName = "there" }: EmptyStateProps) {
             Or browse your dashboard →
           </Link>
         </p>
+        <SuggestionBottomSheet />
       </div>
     </div>
   );
@@ -113,7 +115,7 @@ function SuggestionCard({
       }}
       className={cn(
         "group flex items-start gap-3 rounded-xl border border-border-subtle",
-        "bg-surface-3 p-4 text-left",
+        "bg-surface-3 p-4 text-left min-h-11",
         "transition-all duration-150",
         "hover:border-border-strong hover:bg-[color-mix(in_oklch,var(--brand),var(--surface-3)_92%)]"
       )}

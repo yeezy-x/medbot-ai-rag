@@ -1,4 +1,14 @@
-import { formatDistanceToNowStrict, isToday, isYesterday, differenceInDays } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
+
+/** UTC calendar-day start (ms) — stable across server (Node) and browser timezones. */
+function startOfUtcDayMs(d: Date): number {
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+}
+
+/** Whole UTC calendar days from `date` through `now` (0 = same UTC day). */
+function utcCalendarDaysAgo(date: Date, now: Date): number {
+  return Math.round((startOfUtcDayMs(now) - startOfUtcDayMs(date)) / 86_400_000);
+}
 
 /**
  * Human-friendly relative timestamp used across the app.
@@ -13,18 +23,19 @@ export function relativeTime(input: string | Date): string {
   const date = typeof input === "string" ? new Date(input) : input;
   const now = new Date();
   const diffSec = (now.getTime() - date.getTime()) / 1000;
+  const daysAgo = utcCalendarDaysAgo(date, now);
 
   if (diffSec < 60) return "just now";
   if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
-  if (isToday(date)) return `${Math.floor(diffSec / 3600)}h ago`;
-  if (isYesterday(date)) return "yesterday";
-  if (differenceInDays(now, date) < 7) {
+  if (daysAgo === 0) return `${Math.floor(diffSec / 3600)}h ago`;
+  if (daysAgo === 1) return "yesterday";
+  if (daysAgo < 7) {
     return formatDistanceToNowStrict(date, { addSuffix: true });
   }
   return date.toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
-    year: now.getFullYear() === date.getFullYear() ? undefined : "numeric",
+    year: now.getUTCFullYear() === date.getUTCFullYear() ? undefined : "numeric",
   });
 }
 
@@ -47,9 +58,9 @@ export function groupByDate<T extends { updatedAt?: string; createdAt?: string }
       continue;
     }
     const date = new Date(raw);
-    const days = differenceInDays(now, date);
-    if (isToday(date)) buckets["Today"].push(item);
-    else if (isYesterday(date)) buckets["Yesterday"].push(item);
+    const days = utcCalendarDaysAgo(date, now);
+    if (days === 0) buckets["Today"].push(item);
+    else if (days === 1) buckets["Yesterday"].push(item);
     else if (days < 7) buckets["Previous 7 days"].push(item);
     else if (days < 30) buckets["Previous 30 days"].push(item);
     else buckets["Older"].push(item);

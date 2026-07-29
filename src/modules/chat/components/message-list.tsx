@@ -15,6 +15,7 @@ interface MessageListProps {
   streamingContent?: string;
   streamingCitations?: CitationDisplay[];
   onRegenerate?: () => void;
+  onContinue?: () => void;
   onOpenCitation?: (c: CitationDisplay) => void;
   scrollContainerRef?: RefObject<HTMLElement | null>;
 }
@@ -30,6 +31,7 @@ export function MessageList({
   streamingContent,
   streamingCitations,
   onRegenerate,
+  onContinue,
   onOpenCitation,
   scrollContainerRef,
 }: MessageListProps) {
@@ -48,6 +50,7 @@ export function MessageList({
         role="log"
         aria-live="polite"
         aria-relevant="additions"
+        aria-label="Conversation messages"
         className={cn(
           "w-full max-w-3xl px-6 sm:px-10 py-6 pb-10 space-y-6"
         )}
@@ -70,6 +73,15 @@ export function MessageList({
               ? onRegenerate
               : undefined
           }
+            onContinue={
+              message.role === "ASSISTANT" &&
+              message.incomplete &&
+              idx === messages.length - 1 &&
+              !streaming &&
+              !pendingUserMessage
+                ? onContinue
+                : undefined
+            }
           />
         ))}
 

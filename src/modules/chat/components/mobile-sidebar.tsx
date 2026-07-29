@@ -5,10 +5,8 @@ import { Menu } from "lucide-react";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarContent } from "./chat-sidebar";
-import { Chat } from "../types/chat.types";
 
 interface MobileSidebarProps {
-  chats: Chat[];
   user: {
     id: string;
     name: string | null;
@@ -23,7 +21,11 @@ interface MobileSidebarProps {
  * that gap with a left-side drawer, reusing the exact same `SidebarContent`
  * the desktop sidebar renders so the two never drift apart.
  */
-export function MobileSidebar({ chats, user }: MobileSidebarProps) {
+export function MobileSidebar({
+  user,
+}: {
+  user: MobileSidebarProps["user"];
+}) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -46,11 +48,7 @@ export function MobileSidebar({ chats, user }: MobileSidebarProps) {
         {/* Visually hidden but required by Radix Dialog for a11y — the
             Sheet itself has no visible header/title in this drawer. */}
         <SheetTitle className="sr-only">Chats</SheetTitle>
-        <SidebarContent
-          initialChats={chats}
-          user={user}
-          onNavigate={() => setOpen(false)}
-        />
+        <SidebarContent user={user} onNavigate={() => setOpen(false)} />
       </SheetContent>
     </Sheet>
   );
