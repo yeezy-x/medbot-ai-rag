@@ -5,7 +5,7 @@ generator client {
 }
 
 datasource db {
-  provider   = "postgresql"
+  provider = "postgresql"
 }
 
 enum IngestionStatus {
@@ -15,16 +15,81 @@ enum IngestionStatus {
   FAILED
 }
 
+enum Role {
+  USER
+  DOCTOR
+  RESEARCHER
+  ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  DEACTIVATED
+  PENDING_DELETION
+}
+
+enum AuthTokenType {
+  EMAIL_VERIFY
+  PASSWORD_RESET
+  EMAIL_CHANGE
+  MFA_SETUP
+}
+
+enum AuditAction {
+  LOGIN_SUCCESS
+  LOGIN_FAILURE
+  LOGOUT
+  LOGOUT_ALL
+  REGISTER
+  EMAIL_VERIFIED
+  EMAIL_VERIFICATION_SENT
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_RESET_COMPLETED
+  PASSWORD_CHANGED
+  MFA_SETUP_STARTED
+  MFA_ENABLED
+  MFA_DISABLED
+  MFA_CHALLENGE_SUCCESS
+  MFA_CHALLENGE_FAILURE
+  RECOVERY_CODES_REGENERATED
+  SESSION_REVOKED
+  ACCOUNT_LINKED
+  ACCOUNT_UNLINKED
+  EMAIL_CHANGED
+  PROFILE_UPDATED
+  ACCOUNT_DEACTIVATED
+  ACCOUNT_DELETED
+  ACCOUNT_EXPORTED
+  STEP_UP_SUCCESS
+  SUSPICIOUS_ACTIVITY
+}
+
 model User {
-  id           String        @id @default(uuid())
-  name         String
-  email        String        @unique
-  passwordHash String
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  accounts     Account[]
-  sessions     ChatSession[]
-  authSessions Session[]
+  id                String         @id @default(uuid())
+  name              String
+  email             String         @unique
+  emailVerified     DateTime?
+  image             String?
+  passwordHash      String?
+  passwordChangedAt DateTime?
+  role              Role           @default(USER)
+  status            AccountStatus  @default(ACTIVE)
+  mfaEnabled        Boolean        @default(false)
+  mfaSecretEnc      String?
+  failedLoginCount  Int            @default(0)
+  lockedUntil       DateTime?
+  tokenVersion      Int            @default(0)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  accounts        Account[]
+  sessions        ChatSession[]
+  adapterSessions Session[]
+  authSessions    AuthSession[]
+  recoveryCodes   RecoveryCode[]
+  authTokens      AuthToken[]
+  auditLogs       AuditLog[]
+  trustedDevices  TrustedDevice[]
 }
 
 model ChatSession {
@@ -52,49 +117,51 @@ model Message {
 }
 
 model Citation {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   pageNumber  Int
   sourceTitle String
   chunkId     String
   messageId   String
-  message Message @relation(  fields: [messageId], references: [id], onDelete: Cascade)
-  chunk Chunk @relation(fields: [chunkId], references: [id], onDelete: Cascade) 
-   @@index([messageId])  
-   @@index([chunkId])
+  message     Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  chunk       Chunk   @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
+  @@index([chunkId])
 }
 
 model Document {
-  id          String   @id @default(uuid())
-  title       String
-  fileName    String
-  version     String
-  language    String
-  sourceType  String
-  checksum    String? @unique
+  id              String          @id @default(uuid())
+  title           String
+  fileName        String
+  version         String
+  language        String
+  sourceType      String
+  checksum        String?         @unique
   ingestionStatus IngestionStatus @default(PENDING)
-  uploadedAt  DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  chunks      Chunk[]
+  uploadedAt      DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  chunks          Chunk[]
 }
 
 model Chunk {
-  id                String @id @default(uuid())
-  documentId        String
-  chunkIndex        Int
-  content           String
-  characterCount    Int
-  estimatedTokens   Int
-  startOffset       Int
-  endOffset         Int
-  pageNumber        Int?
-  chapter           String?
-  section           String?
-  headings          Json?
-  embedding         Unsupported("vector(768)")?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  document Document @relation(fields:[documentId], references:[id], onDelete:Cascade)
-  citations Citation[]
+  id              String                       @id @default(uuid())
+  documentId      String
+  chunkIndex      Int
+  content         String
+  characterCount  Int
+  estimatedTokens Int
+  startOffset     Int
+  endOffset       Int
+  pageNumber      Int?
+  chapter         String?
+  section         String?
+  headings        Json?
+  embedding       Unsupported("vector(768)")?
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  document        Document                     @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  citations       Citation[]
+
   @@index([documentId])
   @@index([chunkIndex])
   @@index([pageNumber])
@@ -118,6 +185,7 @@ model Account {
   @@unique([provider, providerAccountId])
 }
 
+/// Auth.js adapter session table (unused for JWT strategy; kept for adapter compatibility)
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -132,6 +200,78 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+/// Application session registry (jti-based JWT revocation + device tracking)
+model AuthSession {
+  id               String    @id @default(cuid())
+  jti              String    @unique
+  userId           String
+  sessionTokenHash String?
+  userAgent        String?
+  ipAddress        String?
+  deviceLabel      String?
+  location         String?
+  createdAt        DateTime  @default(now())
+  lastActiveAt     DateTime  @default(now())
+  expiresAt        DateTime
+  revokedAt        DateTime?
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+}
+
+model AuthToken {
+  id         String        @id @default(cuid())
+  userId     String?
+  type       AuthTokenType
+  identifier String
+  tokenHash  String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  meta       Json?
+  createdAt  DateTime      @default(now())
+  user       User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([type, identifier, tokenHash])
+  @@index([identifier, type])
+}
+
+model RecoveryCode {
+  id        String    @id @default(cuid())
+  userId    String
+  codeHash  String
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model TrustedDevice {
+  id         String   @id @default(cuid())
+  userId     String
+  tokenHash  String   @unique
+  userAgent  String?
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String      @id @default(cuid())
+  userId    String?
+  action    AuditAction
+  ip        String?
+  userAgent String?
+  meta      Json?
+  createdAt DateTime    @default(now())
+  user      User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
 }
 
 enum MessageRole {

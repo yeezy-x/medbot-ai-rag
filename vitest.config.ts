@@ -1,36 +1,25 @@
+import "dotenv/config";
 import { defineConfig } from "vitest/config";
 import path from "path";
 
 export default defineConfig({
   test: {
     globals: true,
-
     environment: "node",
-
-    include: [
-      "src/**/*.test.ts",
-      "benchmarks/**/*.bench.ts",
-    ],
-
+    include: ["tests/**/*.test.ts"],
+    setupFiles: ["./tests/setup-env.ts"],
+    pool: "forks",
+    maxWorkers: 1,
     coverage: {
       provider: "v8",
-
-      reporter: [
-        "text",
-        "html",
-      ],
-
-      reportsDirectory:
-        "./coverage",
+      reporter: ["text", "html"],
+      reportsDirectory: "./coverage",
     },
   },
-
   resolve: {
     alias: {
-      "@": path.resolve(
-        __dirname,
-        "./src"
-      ),
+      "@": path.resolve(__dirname, "./src"),
+      "@tests": path.resolve(__dirname, "./tests"),
     },
   },
 });

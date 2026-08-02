@@ -9,6 +9,77 @@
 * 🟢 You can import this file directly.
 */
 
+export const IngestionStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETE: 'COMPLETE',
+  FAILED: 'FAILED'
+} as const
+
+export type IngestionStatus = (typeof IngestionStatus)[keyof typeof IngestionStatus]
+
+
+export const Role = {
+  USER: 'USER',
+  DOCTOR: 'DOCTOR',
+  RESEARCHER: 'RESEARCHER',
+  ADMIN: 'ADMIN'
+} as const
+
+export type Role = (typeof Role)[keyof typeof Role]
+
+
+export const AccountStatus = {
+  ACTIVE: 'ACTIVE',
+  DEACTIVATED: 'DEACTIVATED',
+  PENDING_DELETION: 'PENDING_DELETION'
+} as const
+
+export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus]
+
+
+export const AuthTokenType = {
+  EMAIL_VERIFY: 'EMAIL_VERIFY',
+  PASSWORD_RESET: 'PASSWORD_RESET',
+  EMAIL_CHANGE: 'EMAIL_CHANGE',
+  MFA_SETUP: 'MFA_SETUP'
+} as const
+
+export type AuthTokenType = (typeof AuthTokenType)[keyof typeof AuthTokenType]
+
+
+export const AuditAction = {
+  LOGIN_SUCCESS: 'LOGIN_SUCCESS',
+  LOGIN_FAILURE: 'LOGIN_FAILURE',
+  LOGOUT: 'LOGOUT',
+  LOGOUT_ALL: 'LOGOUT_ALL',
+  REGISTER: 'REGISTER',
+  EMAIL_VERIFIED: 'EMAIL_VERIFIED',
+  EMAIL_VERIFICATION_SENT: 'EMAIL_VERIFICATION_SENT',
+  PASSWORD_RESET_REQUESTED: 'PASSWORD_RESET_REQUESTED',
+  PASSWORD_RESET_COMPLETED: 'PASSWORD_RESET_COMPLETED',
+  PASSWORD_CHANGED: 'PASSWORD_CHANGED',
+  MFA_SETUP_STARTED: 'MFA_SETUP_STARTED',
+  MFA_ENABLED: 'MFA_ENABLED',
+  MFA_DISABLED: 'MFA_DISABLED',
+  MFA_CHALLENGE_SUCCESS: 'MFA_CHALLENGE_SUCCESS',
+  MFA_CHALLENGE_FAILURE: 'MFA_CHALLENGE_FAILURE',
+  RECOVERY_CODES_REGENERATED: 'RECOVERY_CODES_REGENERATED',
+  SESSION_REVOKED: 'SESSION_REVOKED',
+  ACCOUNT_LINKED: 'ACCOUNT_LINKED',
+  ACCOUNT_UNLINKED: 'ACCOUNT_UNLINKED',
+  EMAIL_CHANGED: 'EMAIL_CHANGED',
+  PROFILE_UPDATED: 'PROFILE_UPDATED',
+  ACCOUNT_DEACTIVATED: 'ACCOUNT_DEACTIVATED',
+  ACCOUNT_DELETED: 'ACCOUNT_DELETED',
+  ACCOUNT_EXPORTED: 'ACCOUNT_EXPORTED',
+  STEP_UP_SUCCESS: 'STEP_UP_SUCCESS',
+  SUSPICIOUS_ACTIVITY: 'SUSPICIOUS_ACTIVITY'
+} as const
+
+export type AuditAction = (typeof AuditAction)[keyof typeof AuditAction]
+
+
 export const MessageRole = {
   USER: 'USER',
   ASSISTANT: 'ASSISTANT',

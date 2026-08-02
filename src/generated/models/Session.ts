@@ -14,7 +14,7 @@ import type * as Prisma from "../internal/prismaNamespace"
 
 /**
  * Model Session
- * 
+ * Auth.js adapter session table (unused for JWT strategy; kept for adapter compatibility)
  */
 export type SessionModel = runtime.Types.Result.DefaultSelection<Prisma.$SessionPayload>
 
@@ -220,7 +220,7 @@ export type SessionCreateInput = {
   id?: string
   sessionToken: string
   expires: Date | string
-  user: Prisma.UserCreateNestedOneWithoutAuthSessionsInput
+  user: Prisma.UserCreateNestedOneWithoutAdapterSessionsInput
 }
 
 export type SessionUncheckedCreateInput = {
@@ -234,7 +234,7 @@ export type SessionUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   sessionToken?: Prisma.StringFieldUpdateOperationsInput | string
   expires?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  user?: Prisma.UserUpdateOneRequiredWithoutAuthSessionsNestedInput
+  user?: Prisma.UserUpdateOneRequiredWithoutAdapterSessionsNestedInput
 }
 
 export type SessionUncheckedUpdateInput = {

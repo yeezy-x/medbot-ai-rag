@@ -1,5 +1,5 @@
-import { UserRepository } from "@/repositories";
-import { BaseService } from "@/services/base.service";
+import { UserRepository } from "@/modules/user/repositories";
+import { BaseService } from "@/core/services/base.service";
 
 export class UserService extends BaseService{
   private userRepository=new UserRepository();

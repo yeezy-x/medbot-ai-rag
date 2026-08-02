@@ -54,7 +54,7 @@ export type Chunk = Prisma.ChunkModel
 export type Account = Prisma.AccountModel
 /**
  * Model Session
- * 
+ * Auth.js adapter session table (unused for JWT strategy; kept for adapter compatibility)
  */
 export type Session = Prisma.SessionModel
 /**
@@ -62,3 +62,28 @@ export type Session = Prisma.SessionModel
  * 
  */
 export type VerificationToken = Prisma.VerificationTokenModel
+/**
+ * Model AuthSession
+ * Application session registry (jti-based JWT revocation + device tracking)
+ */
+export type AuthSession = Prisma.AuthSessionModel
+/**
+ * Model AuthToken
+ * 
+ */
+export type AuthToken = Prisma.AuthTokenModel
+/**
+ * Model RecoveryCode
+ * 
+ */
+export type RecoveryCode = Prisma.RecoveryCodeModel
+/**
+ * Model TrustedDevice
+ * 
+ */
+export type TrustedDevice = Prisma.TrustedDeviceModel
+/**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel

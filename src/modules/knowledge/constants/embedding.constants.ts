@@ -1,7 +1,7 @@
 export const EMBEDDING = {
   PROVIDER: "ollama",
 
-  MODEL: "nomic-embed-text:latest ",
+  MODEL: "nomic-embed-text",
 
   DIMENSIONS: 768,
 

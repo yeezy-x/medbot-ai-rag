@@ -10,4 +10,4 @@ Raw terminal output from performance runs is saved here as `YYYYMMDD-<suite>.txt
 | `*-load-health-autocannon.txt` | `npm run load:health` |
 | `*-load-k6-*.txt` | `npm run load:k6:*` |
 
-Summaries for humans live in [docs/performance-test-report.md](../../docs/performance-test-report.md).
+Summaries for humans live in [docs/performance/performance-test-report.md](../../docs/performance/performance-test-report.md).

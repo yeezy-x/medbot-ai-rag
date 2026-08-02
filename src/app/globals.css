@@ -305,6 +305,26 @@
   background-size: 32px 32px;
 }
 
+/* Auth form surface */
+.auth-panel {
+  border: 1px solid color-mix(in oklch, var(--border), transparent 20%);
+  background: color-mix(in oklch, var(--card), transparent 8%);
+  border-radius: 1rem;
+  padding: 2rem;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 0 0 1px color-mix(in oklch, var(--foreground), transparent 96%);
+}
+
+@media (max-width: 640px) {
+  .auth-panel {
+    padding: 1.5rem;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+}
+
 /* Utility — hide scrollbar but keep scroll */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }

@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { requireApiUser } from "@/lib/auth-utils";
 import { validate } from "@/lib/validate";
 import { ChatService } from "@/modules/chat/services";
 import {
@@ -33,14 +33,8 @@ export async function POST(
   let chatId: string;
 
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return Response.json(
-        { success: false, error: { code: "UNAUTHENTICATED", message: "Sign in required." } },
-        { status: 401 }
-      );
-    }
-    userId = session.user.id;
+    const user = await requireApiUser();
+    userId = user.id;
     const body = await request.json();
     data = validate(askQuestionSchema, body);
     ({ id: chatId } = await context.params);

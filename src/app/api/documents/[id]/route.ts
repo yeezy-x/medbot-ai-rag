@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import { auth } from "@/auth";
-import { DocumentRepository } from "@/repositories/document.repository";
+import { requireApiUser } from "@/lib/auth-utils";
+import { DocumentRepository } from "@/modules/knowledge/repositories/document.repository";
 import { handleError } from "@/lib/error-handler";
 
 export const runtime = "nodejs";
@@ -11,26 +11,13 @@ const documentRepo = new DocumentRepository();
 
 /**
  * Streams an auth-scoped PDF file for a given `Document.id`.
- *
- * Security notes:
- *  - Any authenticated user can fetch any document. This mirrors the current
- *    RAG behaviour (the corpus is a single global knowledge base). If the
- *    system ever grows per-user documents, add an owner check here.
- *  - `fileName` is sanitized against path traversal: only the basename is used
- *    and it must resolve inside `<cwd>/knowledge-base/`.
  */
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return Response.json(
-        { success: false, error: { code: "UNAUTHENTICATED", message: "Sign in required." } },
-        { status: 401 }
-      );
-    }
+    await requireApiUser();
 
     const { id } = await context.params;
     const document = await documentRepo.findById(id);

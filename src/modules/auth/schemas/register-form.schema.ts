@@ -1,15 +1,5 @@
 import { z } from "zod";
+import { registerSchema } from "./auth.schema";
 
-export const registerFormSchema =
-  z.object({
-    name: z.string().min(2),
-
-    email: z.email(),
-
-    password: z.string().min(8),
-  });
-
-export type RegisterFormValues =
-  z.infer<
-    typeof registerFormSchema
-  >;
+export const registerFormSchema = registerSchema;
+export type RegisterFormValues = z.infer<typeof registerFormSchema>;

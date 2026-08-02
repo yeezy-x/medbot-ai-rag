@@ -1,6 +1,6 @@
-import { auth } from "@/auth";
+import { requireApiUser } from "@/lib/auth-utils";
 import { PrismaClient } from "@/generated/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/db";
 import { handleError } from "@/lib/error-handler";
 
 export const runtime = "nodejs";
@@ -12,22 +12,13 @@ const db: PrismaClient = prisma;
  * Returns a lightweight preview payload for a single chunk. Used by the
  * citation hover-card so we don't have to open the full PDF viewer to peek
  * at the cited passage.
- *
- * Response:
- *   { success: true, data: { id, content, pageNumber, chapter, section, documentId, sourceTitle } }
  */
 export async function GET(
   _request: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return Response.json(
-        { success: false, error: { code: "UNAUTHENTICATED", message: "Sign in required." } },
-        { status: 401 }
-      );
-    }
+    await requireApiUser();
 
     const { id } = await context.params;
     const chunk = await db.chunk.findUnique({

@@ -1,7 +1,7 @@
 // src/modules/knowledge/providers/postgres-vector.provider.ts
 
 import { Prisma } from "@/generated/client";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/db";
 
 import { VectorProvider } from "./vector.provider";
 

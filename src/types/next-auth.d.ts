@@ -1,5 +1,7 @@
-import { DefaultSession } from "next-auth";
 import { DefaultJWT } from "@auth/core/jwt";
+import type { UserRole } from "@/types/auth.types";
+
+export type { UserRole };
 
 declare module "next-auth" {
   interface Session {
@@ -7,6 +9,11 @@ declare module "next-auth" {
       id: string;
       email: string;
       name: string;
+      role: UserRole;
+      mfaVerified: boolean;
+      jti?: string;
+      tokenVersion?: number;
+      authTime?: number;
     };
   }
 
@@ -14,6 +21,13 @@ declare module "next-auth" {
     id: string;
     email: string;
     name: string;
+    role?: UserRole;
+    mfaVerified?: boolean;
+    /** AuthSession registry id (avoid `jti` — reserved by Auth.js JWT). */
+    sessionId?: string;
+    jti?: string;
+    tokenVersion?: number;
+    authTime?: number;
   }
 }
 
@@ -22,5 +36,11 @@ declare module "@auth/core/jwt" {
     id: string;
     email: string;
     name: string;
+    role: UserRole;
+    mfaVerified: boolean;
+    /** AuthSession registry id — must NOT use claim name `jti` (reserved by Auth.js encode). */
+    sid?: string;
+    tokenVersion?: number;
+    authTime?: number;
   }
 }

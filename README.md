@@ -33,13 +33,13 @@ The result is answers you can audit: every factual claim can be traced back to a
 
 ### Product surface
 - Marketing landing page (hero, how it works, stack)
-- Email/password auth (NextAuth v5 credentials)
+- Email/password auth (Auth.js v5) with Argon2id, MFA, sessions, Google OAuth
 - Dashboard with recent chats
 - Chat sidebar with search, date grouping, rename / delete
 - Command palette (`⌘K`)
 - Markdown + GFM rendering with syntax-highlighted code blocks
 - Per-message actions (copy, regenerate, export)
-- Settings (theme, retrieval sliders, model display) — preferences stored in the browser
+- Settings (account security, MFA, sessions, theme, retrieval) — security synced to server; UI prefs local
 - Dark-first UI with a single teal accent
 
 ### Knowledge pipeline
@@ -57,7 +57,7 @@ The result is answers you can audit: every factual claim can be traced back to a
 | --- | --- |
 | Framework | [Next.js 16](https://nextjs.org/) (App Router) + React 19 + TypeScript |
 | UI | Tailwind CSS v4, shadcn/ui (Radix), Lucide |
-| Auth | [NextAuth.js v5](https://authjs.dev/) (credentials) + Prisma adapter |
+| Auth | [NextAuth.js v5](https://authjs.dev/) + Argon2id, MFA, session registry, RBAC |
 | Data | [Prisma 7](https://www.prisma.io/) + PostgreSQL + [pgvector](https://github.com/pgvector/pgvector) |
 | LLM / embeddings | [Ollama](https://ollama.com/) — `qwen2.5-coder:3b` (chat), `nomic-embed-text` (embed) |
 | Client data | TanStack Query |
@@ -114,45 +114,63 @@ The system prompt instructs the model to answer medical facts **only** from supp
 
 | Model | Role |
 | --- | --- |
-| `User` | Account with bcrypt password hash |
+| `User` | Account (Argon2id hash, roles, MFA, lockout, status) |
+| `AuthSession` | Multi-device JWT session registry (`jti`) |
+| `AuthToken` | Email verify / password reset / email change tokens |
+| `RecoveryCode` / `TrustedDevice` / `AuditLog` | MFA recovery, remember-device, security audit |
 | `ChatSession` | Owned conversation thread |
 | `Message` | `USER` / `ASSISTANT` / `SYSTEM` turns |
 | `Citation` | Links an assistant message to a chunk (page + source title) |
 | `Document` | Ingested PDF metadata + checksum + ingestion status |
 | `Chunk` | Text unit + optional page/chapter/section + `vector(768)` embedding |
 
-Auth tables (`Account`, `Session`, `VerificationToken`) support the NextAuth Prisma adapter.
+Auth adapter tables (`Account`, `Session`, `VerificationToken`) support Auth.js. See [docs/architecture/auth.md](docs/architecture/auth.md).
 
 ---
 
 ## Project structure
 
+Full navigation guide (folder roles + request flows): [docs/architecture/CODEMAP.md](docs/architecture/CODEMAP.md).
+
 ```
 medbot/
-├── knowledge-base/          # Place PDFs here (gitignored); default: gale-encyclopedia.pdf
+├── docs/                    # All documentation (see docs/README.md)
+│   └── architecture/
+│       └── CODEMAP.md       # How to read src/ and follow request flows
+├── tests/
+│   ├── unit/                # Isolated logic tests (mocked deps)
+│   ├── integration/         # Pipeline tests (PDF, Ollama, DB)
+│   ├── e2e/                 # Smoke / future end-to-end tests
+│   └── fixtures/            # Shared test data
+├── benchmarks/
+│   ├── cpu/                 # Vitest CPU benchmarks
+│   ├── scripts/             # run-*.ts perf harness
+│   ├── load/k6/             # k6 load scenarios
+│   ├── lib/                 # Stats helpers
+│   └── results/             # Saved benchmark output
+├── scripts/
+│   ├── ingest-pdf.ts        # npm run ingest
+│   ├── evaluate-retrieval.ts
+│   └── dev/                 # Manual RAG debug scripts (tsx)
+├── knowledge-base/          # Place PDFs here (gitignored)
 ├── prisma/
-│   ├── schema.prisma        # Domain + auth models, pgvector Chunk.embedding
-│   └── seed.ts              # Local admin user
-├── docs/                    # Architecture notes, frontend roadmap, phase writeups
-├── src/
-│   ├── app/
-│   │   ├── (marketing)/     # Landing page
-│   │   ├── (auth)/          # Login / register
-│   │   ├── (app)/           # Dashboard, chat, settings (authenticated)
-│   │   └── api/             # REST + SSE routes
-│   ├── modules/
-│   │   ├── auth/            # Forms, schemas, auth services
-│   │   ├── chat/            # UI, streaming, chat services
-│   │   ├── knowledge/       # Ingest, embed, retrieve, RAG
-│   │   ├── marketing/       # Landing sections
-│   │   ├── settings/        # Preference UI
-│   │   ├── dashboard/
-│   │   ├── rag/             # Shared RAG constants
-│   │   └── user/
-│   ├── components/          # Shared UI + markdown
-│   ├── config/              # env (Zod), site metadata
-│   └── generated/           # Prisma client output
-└── package.json
+│   ├── schema.prisma
+│   └── seed.ts
+└── src/
+    ├── app/
+    │   ├── (marketing)/     # Landing
+    │   ├── (auth)/          # Login, register, MFA, reset
+    │   ├── (main)/          # Dashboard, chat, settings
+    │   ├── api/             # Thin HTTP handlers
+    │   └── providers.tsx
+    ├── modules/             # Feature modules (auth, chat, knowledge, …)
+    ├── components/          # Shared UI (shadcn, markdown, navbar)
+    ├── lib/                 # Helpers + auth.ts (NextAuth)
+    ├── db/                  # Prisma singleton
+    ├── core/                # BaseRepository / BaseService
+    ├── config/              # env, site
+    ├── proxy.ts             # Auth gate (Next.js 16)
+    └── generated/           # Prisma client
 ```
 
 ---
@@ -190,6 +208,10 @@ Create a `.env` in the project root (see `src/config/env.ts`):
 | `NEXTAUTH_URL` | Optional | App URL (e.g. `http://localhost:3000`) |
 | `OLLAMA_BASE_URL` | Optional | Defaults to `http://localhost:11434` |
 | `NODE_ENV` | Optional | `development` \| `production` \| `test` |
+| `AUTH_GOOGLE_ID` | Optional | Google OAuth client ID |
+| `AUTH_GOOGLE_SECRET` | Optional | Google OAuth client secret |
+| `AUTH_RESEND_KEY` | Optional | Resend API key for magic-link email |
+| `EMAIL_FROM` | Optional | From address for magic links (required with Resend) |
 
 Example:
 
@@ -198,7 +220,21 @@ DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/medbot?sslmode=require"
 AUTH_SECRET="generate-a-long-random-string"
 NEXTAUTH_URL="http://localhost:3000"
 OLLAMA_BASE_URL="http://localhost:11434"
+# AUTH_GOOGLE_ID="..."
+# AUTH_GOOGLE_SECRET="..."
+# AUTH_RESEND_KEY="re_..."
+# EMAIL_FROM="MedBot <onboarding@resend.dev>"
 ```
+
+### Auth surface
+
+- **Credentials** — email/password via NextAuth (`signIn("credentials")`)
+- **Google OAuth** — when `AUTH_GOOGLE_*` is set
+- **Magic link** — when Resend env vars are set
+- **TOTP MFA** — optional per user under Settings → Account
+- **Roles** — `USER` (default) / `ADMIN` (seeded admin); `GET /api/admin/status` is admin-only
+- **Edge gate** — [`src/proxy.ts`](src/proxy.ts) protects dashboard/chat/settings and chat/document APIs
+- Session cookies are set only by NextAuth (`/api/auth/[...nextAuth]`). There is no separate `/api/auth/login`.
 
 ---
 
@@ -266,9 +302,9 @@ Open [http://localhost:3000](http://localhost:3000).
 | Perf suite | `npm run perf:all` | Run main benchmarks + loads |
 | Load (k6) | `npm run load:k6:health` / `load:k6:chat` / `load:k6:stream` | Grafana k6 scenarios |
 
-See [docs/performance-testing-guide.md](docs/performance-testing-guide.md) for the full guide and [docs/performance-test-report.md](docs/performance-test-report.md) for the latest executed results.
+See [docs/performance/performance-testing-guide.md](docs/performance/performance-testing-guide.md) for the full guide and [docs/performance/performance-test-report.md](docs/performance/performance-test-report.md) for the latest executed results.
 
-Additional knowledge scripts under `src/modules/knowledge/scripts/` (embedding consistency, citation chain, prompt hardening, vector search, etc.) can be run with `tsx` for debugging the RAG pipeline.
+Additional RAG debug scripts under `scripts/dev/` (embedding consistency, citation chain, prompt hardening, vector search, etc.) can be run with `tsx` for pipeline debugging.
 
 ---
 
@@ -315,7 +351,7 @@ Default retrieval knobs (server-side): `topK = 5`, `minSimilarity ≈ 0.70`, con
 - Interactive elements carry `data-testid` for UI testing  
 - Frontend and RAG observability (inspector, metrics, PDF viewer) are first-class — useful for demos and portfolio reviews  
 
-More detail lives in `docs/frontend-roadmap.md` and `docs/memory.md`.
+More detail lives in [docs/roadmap/frontend-roadmap.md](docs/roadmap/frontend-roadmap.md) and [docs/memory.md](docs/memory.md).
 
 ---
 
@@ -336,10 +372,11 @@ MedBot is an **educational / research** tool:
 
 | Path | Contents |
 | --- | --- |
-| `docs/phase-0/` | Early ADRs and design questions (RAG, Postgres, embeddings) |
-| `docs/phase-1/` | Project setup & database flow |
-| `docs/phase-3/` | PDF ingestion pipeline design |
-| `docs/frontend-roadmap.md` | Frontend overhaul phases (streaming, citations, inspector, viewer) |
+| `docs/architecture/CODEMAP.md` | How to read the repo: folder map + request flows |
+| `docs/phases/phase-0/` | Early ADRs and design questions (RAG, Postgres, embeddings) |
+| `docs/phases/phase-1/` | Project setup & database flow |
+| `docs/phases/phase-3/` | PDF ingestion pipeline design |
+| `docs/roadmap/frontend-roadmap.md` | Frontend overhaul phases (streaming, citations, inspector, viewer) |
 | `docs/memory.md` | Product PRD + implemented frontend phases |
 | `docs/todo/` | Knowledge filter backlog |
 

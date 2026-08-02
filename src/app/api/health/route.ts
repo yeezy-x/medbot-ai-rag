@@ -1,6 +1,6 @@
 // src/app/api/health/route.ts
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/db";
 
 export async function GET() {
   try {

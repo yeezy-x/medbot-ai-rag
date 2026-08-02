@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/auth-utils";
+import { requireApiUser } from "@/lib/auth-utils";
 import { requestHandler } from "@/lib/request-handler";
 
 import { ChatService } from "@/modules/chat/services";
@@ -14,16 +14,9 @@ export async function GET(
   }
 ) {
   return requestHandler(async () => {
-
-    const user = await requireUser();
-
+    const user = await requireApiUser();
     const { id } = await context.params;
-
-    return chatService.getChatById(
-      id,
-      user.id
-    );
-
+    return chatService.getChatById(id, user.id);
   });
 }
 
@@ -32,7 +25,7 @@ export async function PATCH(
   context: { params: Promise<{ id: string }> }
 ) {
   return requestHandler(async () => {
-    const user = await requireUser();
+    const user = await requireApiUser();
     const { id } = await context.params;
     const body = (await request.json()) as { title?: unknown };
     if (typeof body?.title !== "string") {
@@ -51,15 +44,8 @@ export async function DELETE(
   }
 ) {
   return requestHandler(async () => {
-
-    const user = await requireUser();
-
+    const user = await requireApiUser();
     const { id } = await context.params;
-
-    return chatService.deleteChat(
-      id,
-      user.id
-    );
-
+    return chatService.deleteChat(id, user.id);
   });
 }

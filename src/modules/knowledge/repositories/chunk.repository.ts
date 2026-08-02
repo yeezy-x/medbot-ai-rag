@@ -1,7 +1,7 @@
 // src/modules/knowledge/repositories/chunk.repository.ts
 
 import { Prisma } from "@/generated/client";
-import { BaseRepository } from "@/repositories/base.repository";
+import { BaseRepository } from "@/core/repositories/base.repository";
 
 export class ChunkRepository extends BaseRepository {
 

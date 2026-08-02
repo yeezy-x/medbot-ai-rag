@@ -1,4 +1,4 @@
-import { prisma } from "./prisma";
+import { prisma } from "@/db";
 
 export async function executeTransaction<T>(
   callback: Parameters<typeof prisma.$transaction>[0]

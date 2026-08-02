@@ -1,7 +1,7 @@
 // src/modules/chat/services/message.service.ts
 import { MessageRole } from "@/generated/enums";
-import { MessageRepository } from "@/repositories";
-import { BaseService } from "@/services/base.service";
+import { MessageRepository } from "@/modules/chat/repositories";
+import { BaseService } from "@/core/services/base.service";
 
 export class MessageService extends BaseService {
   private messageRepository = new MessageRepository();

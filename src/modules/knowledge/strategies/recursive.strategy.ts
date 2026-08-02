@@ -175,16 +175,15 @@ export class RecursiveChunkingStrategy
     separatorLength: number,
     state: ChunkBuilderState
   ) {
-    if (
+    while (
+      state.currentParts.length > 0 &&
       state.currentLength +
         separatorLength +
-        incomingLength <=
-      CHUNKING.MAX_CHUNK_SIZE
+        incomingLength >
+        CHUNKING.MAX_CHUNK_SIZE
     ) {
-      return;
+      this.flush(state);
     }
-
-    this.flush(state);
   }
 
 

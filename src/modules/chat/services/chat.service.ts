@@ -1,6 +1,6 @@
 import {
   ChatRepository,
-} from "@/repositories";
+} from "@/modules/chat/repositories";
 
 import {
   NotFoundError,
@@ -8,7 +8,7 @@ import {
 
 import {
   BaseService,
-} from "@/services/base.service";
+} from "@/core/services/base.service";
 
 import {
   RAGService,

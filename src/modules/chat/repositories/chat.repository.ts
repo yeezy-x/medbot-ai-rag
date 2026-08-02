@@ -1,47 +1,53 @@
 // src/repositories/chat.repository.ts
 
-import { prisma } from "@/lib/prisma";
 
-import {
-  Prisma,
-} from "@/generated/client";
+import { BaseRepository } from "@/core/repositories/base.repository";
 
-import {
-  CitationReference,
-} from "@/modules/knowledge/types/retrieval.types";
-import { CreateMessageDto } from "../types/chat-repository.types";
+import { CitationReference } from "@/modules/knowledge/types/retrieval.types";
+import { CreateMessageDto } from "@/modules/chat/types/chat-repository.types";
 
-export class ChatRepository {
+
+export class ChatRepository extends BaseRepository {
 
   // ---------------------------------------------------------------------------
-  // Chat Session
+  // Chat Sessions
   // ---------------------------------------------------------------------------
 
   async create(
-    data: Prisma.ChatSessionCreateInput
+    data: {
+      title: string;
+      userId: string;
+    }
   ) {
-    return prisma.chatSession.create({
-      data,
+    return this.db.chatSession.create({
+      data:{
+        title: data.title,
+        user:{
+          connect:{
+            id: data.userId
+          }
+        }
+      }
     });
   }
 
   async findById(
-    chatId: string
+    id: string
   ) {
-    return prisma.chatSession.findUnique({
+    return this.db.chatSession.findUnique({
       where: {
-        id: chatId,
+        id,
       },
     });
   }
 
   async findByIdAndUserId(
-    chatId: string,
+    id: string,
     userId: string
   ) {
-    return prisma.chatSession.findFirst({
+    return this.db.chatSession.findFirst({
       where: {
-        id: chatId,
+        id,
         userId,
       },
     });
@@ -50,23 +56,45 @@ export class ChatRepository {
   async findByUserId(
     userId: string
   ) {
-    return prisma.chatSession.findMany({
+    return this.db.chatSession.findMany({
       where: {
         userId,
       },
-
       orderBy: {
         updatedAt: "desc",
       },
     });
   }
 
-  async delete(
-    chatId: string
+  async updateTitle(
+    id: string,
+    title: string
   ) {
-    return prisma.chatSession.delete({
+    return this.db.chatSession.update({
       where: {
-        id: chatId,
+        id,
+      },
+      data: {
+        title,
+      },
+    });
+  }
+
+  async updateTitleForUser(id: string, userId: string, title: string) {
+    // Delegates via update with a compound where guard so we never rename
+    // another user's chat.
+    return this.db.chatSession.updateMany({
+      where: { id, userId },
+      data: { title },
+    });
+  }
+
+  async delete(
+    id: string
+  ) {
+    return this.db.chatSession.delete({
+      where: {
+        id,
       },
     });
   }
@@ -78,10 +106,10 @@ export class ChatRepository {
   async createMessage(
     data: CreateMessageDto
   ) {
-    return prisma.message.create({
+    return this.db.message.create({
       data: {
         sessionId: data.sessionId,
-        role: data.role,
+        role: data.role, // Type assertion to bypass type mismatch
         content: data.content,
       },
     });
@@ -90,20 +118,25 @@ export class ChatRepository {
   async getConversation(
     sessionId: string
   ) {
-    return prisma.message.findMany({
-      where: {
-        sessionId,
+    return this.db.message.findMany({
+      where:{sessionId},
+      include:{
+        citations:{
+          include:{
+            chunk:{
+              select:{
+                documentId:true,
+              }
+            }
+          }
+        }
       },
-
-      include: {
-        citations: true,
-      },
-
       orderBy: {
         createdAt: "asc",
-      },
+      }
     });
   }
+    
 
   // ---------------------------------------------------------------------------
   // Citations
@@ -117,19 +150,13 @@ export class ChatRepository {
       return;
     }
 
-    await prisma.citation.createMany({
+    return this.db.citation.createMany({
       data: citations.map(
         citation => ({
           messageId,
-
-          chunkId:
-            citation.chunkId,
-
-          pageNumber:
-            citation.pageNumber ?? 0,
-
-          sourceTitle:
-            citation.sourceTitle,
+          chunkId: citation.chunkId,
+          pageNumber: citation.pageNumber ?? 0,
+          sourceTitle: citation.sourceTitle,
         })
       ),
     });

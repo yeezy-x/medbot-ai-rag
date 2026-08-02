@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { LogoutButton } from "@/modules/auth/components/logout-button";
 
 export async function Navbar() {

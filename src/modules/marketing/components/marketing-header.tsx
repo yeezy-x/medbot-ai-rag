@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { auth } from "@/auth";
+import { auth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { LogoWordmark } from "@/components/marketing/logo-wordmark";

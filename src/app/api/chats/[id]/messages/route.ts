@@ -1,4 +1,4 @@
-import { requireUser } from "@/lib/auth-utils";
+import { requireApiUser } from "@/lib/auth-utils";
 import { requestHandler } from "@/lib/request-handler";
 import { validate } from "@/lib/validate";
 import { ChatService } from "@/modules/chat/services";
@@ -15,12 +15,9 @@ export async function POST(
   }
 ) {
   return requestHandler(async () => {
-    const user = await requireUser();
+    const user = await requireApiUser();
     const body = await request.json();
-    const data = validate(
-      askQuestionSchema,
-      body
-    )
+    const data = validate(askQuestionSchema, body);
     const { id: chatId } = await context.params;
     return chatService.sendMessage({
       chatId,
@@ -29,7 +26,6 @@ export async function POST(
       topK: data.topK,
       minScore: data.minScore,
     });
-
   });
 }
 
@@ -42,17 +38,8 @@ export async function GET(
   }
 ) {
   return requestHandler(async () => {
-
-    const user =
-      await requireUser();
-
-    const { id } =
-      await context.params;
-
-    return chatService.getChatById(
-      id,
-      user.id
-    );
-
+    const user = await requireApiUser();
+    const { id } = await context.params;
+    return chatService.getChatById(id, user.id);
   });
 }

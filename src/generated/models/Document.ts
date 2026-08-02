@@ -32,6 +32,7 @@ export type DocumentMinAggregateOutputType = {
   language: string | null
   sourceType: string | null
   checksum: string | null
+  ingestionStatus: $Enums.IngestionStatus | null
   uploadedAt: Date | null
   updatedAt: Date | null
 }
@@ -44,6 +45,7 @@ export type DocumentMaxAggregateOutputType = {
   language: string | null
   sourceType: string | null
   checksum: string | null
+  ingestionStatus: $Enums.IngestionStatus | null
   uploadedAt: Date | null
   updatedAt: Date | null
 }
@@ -56,6 +58,7 @@ export type DocumentCountAggregateOutputType = {
   language: number
   sourceType: number
   checksum: number
+  ingestionStatus: number
   uploadedAt: number
   updatedAt: number
   _all: number
@@ -70,6 +73,7 @@ export type DocumentMinAggregateInputType = {
   language?: true
   sourceType?: true
   checksum?: true
+  ingestionStatus?: true
   uploadedAt?: true
   updatedAt?: true
 }
@@ -82,6 +86,7 @@ export type DocumentMaxAggregateInputType = {
   language?: true
   sourceType?: true
   checksum?: true
+  ingestionStatus?: true
   uploadedAt?: true
   updatedAt?: true
 }
@@ -94,6 +99,7 @@ export type DocumentCountAggregateInputType = {
   language?: true
   sourceType?: true
   checksum?: true
+  ingestionStatus?: true
   uploadedAt?: true
   updatedAt?: true
   _all?: true
@@ -179,6 +185,7 @@ export type DocumentGroupByOutputType = {
   language: string
   sourceType: string
   checksum: string | null
+  ingestionStatus: $Enums.IngestionStatus
   uploadedAt: Date
   updatedAt: Date
   _count: DocumentCountAggregateOutputType | null
@@ -212,6 +219,7 @@ export type DocumentWhereInput = {
   language?: Prisma.StringFilter<"Document"> | string
   sourceType?: Prisma.StringFilter<"Document"> | string
   checksum?: Prisma.StringNullableFilter<"Document"> | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFilter<"Document"> | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   chunks?: Prisma.ChunkListRelationFilter
@@ -225,6 +233,7 @@ export type DocumentOrderByWithRelationInput = {
   language?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   checksum?: Prisma.SortOrderInput | Prisma.SortOrder
+  ingestionStatus?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   chunks?: Prisma.ChunkOrderByRelationAggregateInput
@@ -241,6 +250,7 @@ export type DocumentWhereUniqueInput = Prisma.AtLeast<{
   version?: Prisma.StringFilter<"Document"> | string
   language?: Prisma.StringFilter<"Document"> | string
   sourceType?: Prisma.StringFilter<"Document"> | string
+  ingestionStatus?: Prisma.EnumIngestionStatusFilter<"Document"> | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Document"> | Date | string
   chunks?: Prisma.ChunkListRelationFilter
@@ -254,6 +264,7 @@ export type DocumentOrderByWithAggregationInput = {
   language?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   checksum?: Prisma.SortOrderInput | Prisma.SortOrder
+  ingestionStatus?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DocumentCountOrderByAggregateInput
@@ -272,6 +283,7 @@ export type DocumentScalarWhereWithAggregatesInput = {
   language?: Prisma.StringWithAggregatesFilter<"Document"> | string
   sourceType?: Prisma.StringWithAggregatesFilter<"Document"> | string
   checksum?: Prisma.StringNullableWithAggregatesFilter<"Document"> | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusWithAggregatesFilter<"Document"> | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeWithAggregatesFilter<"Document"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Document"> | Date | string
 }
@@ -284,6 +296,7 @@ export type DocumentCreateInput = {
   language: string
   sourceType: string
   checksum?: string | null
+  ingestionStatus?: $Enums.IngestionStatus
   uploadedAt?: Date | string
   updatedAt?: Date | string
   chunks?: Prisma.ChunkCreateNestedManyWithoutDocumentInput
@@ -297,6 +310,7 @@ export type DocumentUncheckedCreateInput = {
   language: string
   sourceType: string
   checksum?: string | null
+  ingestionStatus?: $Enums.IngestionStatus
   uploadedAt?: Date | string
   updatedAt?: Date | string
   chunks?: Prisma.ChunkUncheckedCreateNestedManyWithoutDocumentInput
@@ -310,6 +324,7 @@ export type DocumentUpdateInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.StringFieldUpdateOperationsInput | string
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFieldUpdateOperationsInput | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chunks?: Prisma.ChunkUpdateManyWithoutDocumentNestedInput
@@ -323,6 +338,7 @@ export type DocumentUncheckedUpdateInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.StringFieldUpdateOperationsInput | string
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFieldUpdateOperationsInput | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   chunks?: Prisma.ChunkUncheckedUpdateManyWithoutDocumentNestedInput
@@ -336,6 +352,7 @@ export type DocumentCreateManyInput = {
   language: string
   sourceType: string
   checksum?: string | null
+  ingestionStatus?: $Enums.IngestionStatus
   uploadedAt?: Date | string
   updatedAt?: Date | string
 }
@@ -348,6 +365,7 @@ export type DocumentUpdateManyMutationInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.StringFieldUpdateOperationsInput | string
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFieldUpdateOperationsInput | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -360,6 +378,7 @@ export type DocumentUncheckedUpdateManyInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.StringFieldUpdateOperationsInput | string
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFieldUpdateOperationsInput | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -372,6 +391,7 @@ export type DocumentCountOrderByAggregateInput = {
   language?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   checksum?: Prisma.SortOrder
+  ingestionStatus?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -384,6 +404,7 @@ export type DocumentMaxOrderByAggregateInput = {
   language?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   checksum?: Prisma.SortOrder
+  ingestionStatus?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -396,6 +417,7 @@ export type DocumentMinOrderByAggregateInput = {
   language?: Prisma.SortOrder
   sourceType?: Prisma.SortOrder
   checksum?: Prisma.SortOrder
+  ingestionStatus?: Prisma.SortOrder
   uploadedAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -405,8 +427,8 @@ export type DocumentScalarRelationFilter = {
   isNot?: Prisma.DocumentWhereInput
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
+export type EnumIngestionStatusFieldUpdateOperationsInput = {
+  set?: $Enums.IngestionStatus
 }
 
 export type DocumentCreateNestedOneWithoutChunksInput = {
@@ -431,6 +453,7 @@ export type DocumentCreateWithoutChunksInput = {
   language: string
   sourceType: string
   checksum?: string | null
+  ingestionStatus?: $Enums.IngestionStatus
   uploadedAt?: Date | string
   updatedAt?: Date | string
 }
@@ -443,6 +466,7 @@ export type DocumentUncheckedCreateWithoutChunksInput = {
   language: string
   sourceType: string
   checksum?: string | null
+  ingestionStatus?: $Enums.IngestionStatus
   uploadedAt?: Date | string
   updatedAt?: Date | string
 }
@@ -471,6 +495,7 @@ export type DocumentUpdateWithoutChunksInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.StringFieldUpdateOperationsInput | string
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFieldUpdateOperationsInput | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -483,6 +508,7 @@ export type DocumentUncheckedUpdateWithoutChunksInput = {
   language?: Prisma.StringFieldUpdateOperationsInput | string
   sourceType?: Prisma.StringFieldUpdateOperationsInput | string
   checksum?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  ingestionStatus?: Prisma.EnumIngestionStatusFieldUpdateOperationsInput | $Enums.IngestionStatus
   uploadedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -526,6 +552,7 @@ export type DocumentSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs
   language?: boolean
   sourceType?: boolean
   checksum?: boolean
+  ingestionStatus?: boolean
   uploadedAt?: boolean
   updatedAt?: boolean
   chunks?: boolean | Prisma.Document$chunksArgs<ExtArgs>
@@ -540,6 +567,7 @@ export type DocumentSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exte
   language?: boolean
   sourceType?: boolean
   checksum?: boolean
+  ingestionStatus?: boolean
   uploadedAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["document"]>
@@ -552,6 +580,7 @@ export type DocumentSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exte
   language?: boolean
   sourceType?: boolean
   checksum?: boolean
+  ingestionStatus?: boolean
   uploadedAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["document"]>
@@ -564,11 +593,12 @@ export type DocumentSelectScalar = {
   language?: boolean
   sourceType?: boolean
   checksum?: boolean
+  ingestionStatus?: boolean
   uploadedAt?: boolean
   updatedAt?: boolean
 }
 
-export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "fileName" | "version" | "language" | "sourceType" | "checksum" | "uploadedAt" | "updatedAt", ExtArgs["result"]["document"]>
+export type DocumentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "fileName" | "version" | "language" | "sourceType" | "checksum" | "ingestionStatus" | "uploadedAt" | "updatedAt", ExtArgs["result"]["document"]>
 export type DocumentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   chunks?: boolean | Prisma.Document$chunksArgs<ExtArgs>
   _count?: boolean | Prisma.DocumentCountOutputTypeDefaultArgs<ExtArgs>
@@ -589,6 +619,7 @@ export type $DocumentPayload<ExtArgs extends runtime.Types.Extensions.InternalAr
     language: string
     sourceType: string
     checksum: string | null
+    ingestionStatus: $Enums.IngestionStatus
     uploadedAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["document"]>
@@ -1022,6 +1053,7 @@ export interface DocumentFieldRefs {
   readonly language: Prisma.FieldRef<"Document", 'String'>
   readonly sourceType: Prisma.FieldRef<"Document", 'String'>
   readonly checksum: Prisma.FieldRef<"Document", 'String'>
+  readonly ingestionStatus: Prisma.FieldRef<"Document", 'IngestionStatus'>
   readonly uploadedAt: Prisma.FieldRef<"Document", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Document", 'DateTime'>
 }

@@ -12,7 +12,7 @@ import { OllamaEmbeddingProvider } from "../providers/ollama.provider";
 
 import {
   DocumentRepository,
-} from "../../../repositories/document.repository"
+} from "@/modules/knowledge/repositories/document.repository"
 
 import {
   IngestionOptions,
