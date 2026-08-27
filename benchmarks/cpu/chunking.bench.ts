@@ -1,13 +1,11 @@
 import { bench, describe } from "vitest";
 
-import { ChunkingService } from "@/modules/knowledge/services/chunking.serivce";
-import { NormalizationService } from "@/modules/knowledge/services/normalization.service";
-import { RecursiveChunkingStrategy } from "@/modules/knowledge/strategies/recursive.strategy";
-import {
-  LARGE_PARAGRAPH,
-  MEDICAL_TEXT,
-  OVERLAP_TEXT,
-} from "@tests/fixtures/knowledge/fixtures";
+import { LARGE_PARAGRAPH } from "../../tests/fixtures/knowledge/fixtures";
+import { OVERLAP_TEXT } from "../../tests/fixtures/knowledge/fixtures";
+import { MEDICAL_TEXT } from "../../tests/fixtures/knowledge/fixtures";
+import { ChunkingService } from "../../src/modules/knowledge/services/chunking.serivce";
+import { NormalizationService } from "../../src/modules/knowledge/services/normalization.service";
+import { RecursiveChunkingStrategy } from "../../src/modules/knowledge/strategies/recursive.strategy";
 
 const chunkingService = new ChunkingService();
 const normalizationService = new NormalizationService();

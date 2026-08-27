@@ -1,3 +1,4 @@
+import { env } from "@/config/env";
 import { Ollama } from "ollama";
 
 import { EMBEDDING } from "../constants/embedding.constants";
@@ -22,7 +23,7 @@ export class OllamaEmbeddingProvider
 
   constructor(client?:Ollama) {
     this.client = client ?? new Ollama({
-      host: EMBEDDING.OLLAMA_BASE_URL,
+      host: env.OLLAMA_BASE_URL ?? EMBEDDING.OLLAMA_BASE_URL,
     });
   }
 

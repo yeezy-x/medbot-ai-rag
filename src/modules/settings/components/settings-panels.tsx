@@ -9,7 +9,7 @@ import { TopKSlider, SimilaritySlider } from "./retrieval-sliders";
 import { AccountRoleBadge } from "./account-role-badge";
 import { UserProfile } from "@clerk/nextjs";
 
-export function SettingsPanels() {
+export function SettingsPanels({ modelLabel }: { modelLabel: string }) {
   return (
     <div className="mt-8 space-y-4">
       <Card>
@@ -75,7 +75,7 @@ export function SettingsPanels() {
           <CardTitle className="text-[0.95rem]">Model</CardTitle>
         </CardHeader>
         <CardContent className="px-4">
-          <ModelPicker />
+          <ModelPicker label={modelLabel} />
         </CardContent>
       </Card>
     </div>

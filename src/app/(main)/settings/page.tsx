@@ -3,9 +3,12 @@ import { ArrowLeft } from "lucide-react";
 
 import { requireUser } from "@/lib/auth-utils";
 import { SettingsForm } from "@/components/settings-form";
+import { getLlmRuntime } from "@/config/llm";
 
 export default async function SettingsPage() {
   await requireUser();
+  const llm = getLlmRuntime();
+  const modelLabel = `${llm.chatModel} (${llm.provider})`;
 
   return (
     <div className="h-full overflow-y-auto">
@@ -26,7 +29,7 @@ export default async function SettingsPage() {
           </p>
         </div>
 
-        <SettingsForm />
+        <SettingsForm modelLabel={modelLabel} />
       </div>
     </div>
   );

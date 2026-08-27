@@ -8,7 +8,7 @@ import { ChunkingService } from "./chunking.serivce";
 import { VectorService } from "./vector.service";
 import { ChecksumService } from "./checksum.service";
 
-import { OllamaEmbeddingProvider } from "../providers/ollama.provider";
+import { createEmbeddingProvider } from "../providers/create-embedding-provider";
 
 import {
   DocumentRepository,
@@ -35,9 +35,7 @@ export class IngestionService {
       new MetadataService(),
 
     private readonly embeddingService =
-      new EmbeddingService(
-        new OllamaEmbeddingProvider()
-      ),
+      new EmbeddingService(createEmbeddingProvider())
 
     private readonly documentRepository =
       new DocumentRepository(),

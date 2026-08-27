@@ -206,7 +206,15 @@ Create a `.env` in the project root (see `src/config/env.ts`):
 | `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Optional | Defaults to `/sign-in` |
 | `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Optional | Defaults to `/sign-up` |
 | `CLERK_WEBHOOK_SIGNING_SECRET` | Optional | Svix secret for `/api/webhooks/clerk` |
-| `OLLAMA_BASE_URL` | Optional | Defaults to `http://localhost:11434` |
+| `OLLAMA_BASE_URL` | Optional | Local Ollama (`http://localhost:11434`) |
+| `LLM_PROVIDER` | Optional | `auto` (default), `ollama`, `openrouter`, or `gemini` |
+| `OPENROUTER_API_KEY` | Production | Use a [free OpenRouter model](https://openrouter.ai/models?q=free) on Vercel |
+| `OPENROUTER_CHAT_MODEL` | Optional | Default `google/gemini-2.0-flash-exp:free` |
+| `OPENROUTER_EMBED_MODEL` | Optional | Default `nomic-ai/nomic-embed-text-v1.5` (768-d) |
+| `GEMINI_API_KEY` | Optional | Native Gemini if you prefer Google over OpenRouter |
+| `GEMINI_CHAT_MODEL` | Optional | Default `gemini-2.0-flash` |
+| `GEMINI_EMBED_MODEL` | Optional | Default `gemini-embedding-001` (768-d) |
+| `CHAT_MODEL` | Optional | Overrides the chat model id for the active provider |
 | `NODE_ENV` | Optional | `development` \| `production` \| `test` |
 | `ADMIN_EMAIL` | Optional | Seed promotes this local user to `ADMIN` |
 
@@ -219,7 +227,15 @@ CLERK_SECRET_KEY="sk_test_..."
 NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
 NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
 OLLAMA_BASE_URL="http://localhost:11434"
+# Production (Vercel): OpenRouter free models — do not rely on local Ollama
+# OPENROUTER_API_KEY="sk-or-..."
+# LLM_PROVIDER="openrouter"
+# Or Gemini:
+# GEMINI_API_KEY="..."
+# LLM_PROVIDER="gemini"
 ```
+
+`auto` picks OpenRouter if `OPENROUTER_API_KEY` is set, else Gemini if `GEMINI_API_KEY` is set, else Ollama. Vercel has no Ollama, so set a cloud key there. Query embeddings must stay **768 dimensions** to match pgvector (`nomic-embed-text`). If you switch embed families, re-run `npm run ingest`.
 
 ### Auth surface
 

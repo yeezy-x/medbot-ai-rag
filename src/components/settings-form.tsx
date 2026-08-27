@@ -2,6 +2,6 @@
 
 import { SettingsPanels } from "@/modules/settings/components/settings-panels";
 
-export function SettingsForm() {
-  return <SettingsPanels />;
+export function SettingsForm({ modelLabel }: { modelLabel: string }) {
+  return <SettingsPanels modelLabel={modelLabel} />;
 }

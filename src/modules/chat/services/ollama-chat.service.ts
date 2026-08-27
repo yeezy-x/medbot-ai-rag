@@ -1,7 +1,5 @@
-import type {
-  OllamaChatRequest,
-  OllamaChatResponse,
-} from "../types/ollama.types";
+import type {OllamaChatRequest,OllamaChatResponse} from "../types/ollama.types";
+import type { ChatModel } from "./chat-model";
 
 /**
  * OllamaChatService
@@ -11,7 +9,7 @@ import type {
  * token streaming (`generateStream`). Network failures are trapped so the
  * caller (ChatService) can decide how to persist partial results.
  */
-export class OllamaChatService {
+export class OllamaChatService implements ChatModel {
   constructor(
     private readonly baseUrl = process.env.OLLAMA_BASE_URL ?? "http://localhost:11434"
   ) {}

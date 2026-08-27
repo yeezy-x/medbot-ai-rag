@@ -11,7 +11,8 @@ export const EMBEDDING = {
 
   REQUEST_TIMEOUT_MS: 30_000,
 
-  OLLAMA_BASE_URL: "http://localhost:11434",
+  OLLAMA_BASE_URL:
+    process.env.OLLAMA_BASE_URL ?? "http://localhost:11434",
 
   KEEP_ALIVE: "10m",
 } as const;

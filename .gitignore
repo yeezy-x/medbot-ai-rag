@@ -43,3 +43,10 @@ next-env.d.ts
 /app/generated/prisma
 
 /knowledge-base
+
+/tests
+/benchmarks
+/coverage
+
+/docs/performance
+/docs/audit

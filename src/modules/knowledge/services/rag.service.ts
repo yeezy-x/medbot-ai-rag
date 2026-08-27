@@ -3,7 +3,9 @@ import { ContextBuilder } from "../builders/context.builder";
 import { PromptBuilder } from "../builders/prompt.builder";
 import type { RAGContext, RAGRequest, RAGResponse } from "../types/rag.types";
 import type {CitationReference,RetrievedChunk} from "../types/retrieval.types";
-import { OllamaChatService } from "@/modules/chat/services/ollama-chat.service";
+import { createChatModel } from "@/modules/chat/services/create-chat-model";
+import type { ChatModel } from "@/modules/chat/services/chat-model";
+import { assertProductionLlmConfigured, getChatModelName } from "@/config/llm";
 import {DEFAULT_MIN_SIMILARITY_SCORE,DEFAULT_TOP_K} from "../constants/retrieval.constants";
 import { MAX_CONTEXT_CHARACTERS } from "../constants/context.constants";
 
@@ -76,7 +78,7 @@ export class RAGService {
     private readonly retrievalService = new RetrievalService(),
     private readonly contextBuilder = new ContextBuilder(),
     private readonly promptBuilder = new PromptBuilder(),
-    private readonly ollamaChatService = new OllamaChatService()
+    private readonly chatModel: ChatModel = createChatModel()
   ) {}
 
   private async buildContext(request: RAGRequest): Promise<RAGContext> {
@@ -179,12 +181,13 @@ export class RAGService {
    * Non-streaming pipeline — kept for compatibility.
    */
   async generate(request: RAGRequest): Promise<RAGResponse> {
+    assertProductionLlmConfigured();
     const startedAt = Date.now();
     const ragContext = await this.buildContext(request);
     const citations = this.filterCitations(ragContext);
 
-    const response = await this.ollamaChatService.generate({
-      model: "qwen2.5-coder:3b",
+    const response = await this.chatModel.generate({
+      model: getChatModelName(),
       system: ragContext.prompt.system,
       prompt: ragContext.prompt.context,
       stream: false,
@@ -211,6 +214,15 @@ export class RAGService {
     options: RAGStreamOptions = {}
   ): AsyncGenerator<RAGStreamEvent, void, unknown> {
     const { signal, debug = false } = options;
+    try {
+      assertProductionLlmConfigured();
+    } catch (err) {
+      yield {
+        type: "error",
+        message: err instanceof Error ? err.message : "LLM is not configured",
+      };
+      return;
+    }
     const startedAt = Date.now();
     let ragContext: RAGContext;
     try {
@@ -237,9 +249,9 @@ export class RAGService {
 
     let answer = "";
     try {
-      for await (const frame of this.ollamaChatService.generateStream(
+      for await (const frame of this.chatModel.generateStream(
         {
-          model: "qwen2.5-coder:3b",
+          model: getChatModelName(),
           system: ragContext.prompt.system,
           prompt: ragContext.prompt.context,
         },

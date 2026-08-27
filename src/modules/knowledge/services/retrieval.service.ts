@@ -1,7 +1,7 @@
 import { EmbeddingService } from "./embedding.service";
 import { VectorService } from "./vector.service";
 
-import { OllamaEmbeddingProvider } from "../providers/ollama.provider";
+import { createEmbeddingProvider } from "../providers/create-embedding-provider";
 import {
   CitationReference,
   RetrievalRequest,
@@ -14,9 +14,7 @@ import { DEFAULT_CANDIDATE_POOL_SIZE, DEFAULT_MIN_SIMILARITY_SCORE } from "../co
 export class RetrievalService {
   constructor(
     private readonly embeddingService =
-      new EmbeddingService(
-        new OllamaEmbeddingProvider()
-      ),
+      new EmbeddingService(createEmbeddingProvider())
     private readonly vectorService =
       new VectorService()
   ) {}
