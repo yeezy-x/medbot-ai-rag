@@ -8,57 +8,11 @@ const baseUrl = (process.env.BASE_URL ?? "http://127.0.0.1:3000").replace(
   /\/$/,
   ""
 );
-const email = process.env.LOAD_TEST_EMAIL ?? "admin@medbot.com";
-const password = process.env.LOAD_TEST_PASSWORD ?? "password123";
-
-function parseSetCookie(headers: Headers): string[] {
-  const raw = headers.getSetCookie?.() ?? [];
-  if (raw.length > 0) return raw;
-  const single = headers.get("set-cookie");
-  return single ? [single] : [];
-}
-
-function cookieHeaderFromResponses(responses: Response[]): string {
-  const pairs: string[] = [];
-  for (const res of responses) {
-    for (const line of parseSetCookie(res.headers)) {
-      const part = line.split(";")[0]?.trim();
-      if (part) pairs.push(part);
-    }
-  }
-  return pairs.join("; ");
-}
-
-async function login(): Promise<string> {
-  const csrfRes = await fetch(`${baseUrl}/api/auth/csrf`);
-  const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
-
-  const body = new URLSearchParams({
-    csrfToken,
-    email,
-    password,
-    redirect: "false",
-    callbackUrl: `${baseUrl}/dashboard`,
-    json: "true",
-  });
-
-  const loginRes = await fetch(
-    `${baseUrl}/api/auth/callback/credentials`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Cookie: cookieHeaderFromResponses([csrfRes]),
-      },
-      body,
-      redirect: "manual",
-    }
-  );
-
-  const cookie = cookieHeaderFromResponses([csrfRes, loginRes]);
-  if (!cookie.includes("session-token")) {
+function sessionCookie(): string {
+  const cookie = process.env.CLERK_SESSION_COOKIE;
+  if (!cookie) {
     throw new Error(
-      `Login failed (status ${loginRes.status}). Run npm run seed and ensure AUTH_SECRET is loaded (npm run dev).`
+      "Set CLERK_SESSION_COOKIE to a signed-in Clerk session cookie header (Auth.js login was removed)."
     );
   }
   return cookie;
@@ -66,10 +20,10 @@ async function login(): Promise<string> {
 
 async function main(): Promise<void> {
   console.log("\n========== AUTH + STREAM SMOKE ==========\n");
-  console.log({ baseUrl, email });
+  console.log({ baseUrl });
 
-  const cookie = await login();
-  console.log("Login: OK");
+  const cookie = sessionCookie();
+  console.log("Clerk cookie: OK");
 
   const listRes = await fetch(`${baseUrl}/api/chats`, {
     headers: { Cookie: cookie },

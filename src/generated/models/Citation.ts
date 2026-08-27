@@ -405,6 +405,14 @@ export type CitationUncheckedUpdateManyWithoutMessageNestedInput = {
   deleteMany?: Prisma.CitationScalarWhereInput | Prisma.CitationScalarWhereInput[]
 }
 
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
 export type CitationCreateNestedManyWithoutChunkInput = {
   create?: Prisma.XOR<Prisma.CitationCreateWithoutChunkInput, Prisma.CitationUncheckedCreateWithoutChunkInput> | Prisma.CitationCreateWithoutChunkInput[] | Prisma.CitationUncheckedCreateWithoutChunkInput[]
   connectOrCreate?: Prisma.CitationCreateOrConnectWithoutChunkInput | Prisma.CitationCreateOrConnectWithoutChunkInput[]

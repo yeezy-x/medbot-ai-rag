@@ -1,56 +1,15 @@
-import http from "k6/http";
-import { check } from "k6";
-
 /**
  * NextAuth / Auth.js credentials login using a shared cookie jar.
+ * Clerk: pass CLERK_SESSION_COOKIE (full Cookie header value) instead.
  */
 export function loginSessionCookie(baseUrl, email, password) {
-  const jar = new http.CookieJar();
-
-  const csrfRes = http.get(`${baseUrl}/api/auth/csrf`, { jar });
-  check(csrfRes, {
-    "csrf status 200": (r) => r.status === 200,
-  });
-
-  const csrfToken = csrfRes.json("csrfToken");
-  const payload = {
-    csrfToken,
-    email,
-    password,
-    redirect: "false",
-    callbackUrl: `${baseUrl}/dashboard`,
-    json: "true",
-  };
-
-  const loginRes = http.post(
-    `${baseUrl}/api/auth/callback/credentials`,
-    payload,
-    {
-      jar,
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-    }
+  const fromEnv = __ENV.CLERK_SESSION_COOKIE;
+  if (fromEnv) {
+    return fromEnv;
+  }
+  throw new Error(
+    "Auth.js login was removed. Set CLERK_SESSION_COOKIE to a signed-in Clerk cookie string."
   );
-
-  check(loginRes, {
-    "login status 2xx": (r) => r.status >= 200 && r.status < 300,
-  });
-
-  const cookies = jar.cookiesForURL(baseUrl);
-  const names = Object.keys(cookies);
-  const sessionName = names.find((n) => n.includes("session-token"));
-  if (!sessionName) {
-    return "";
-  }
-
-  const entry = cookies[sessionName];
-  const value = Array.isArray(entry) ? entry[0]?.value : entry?.value;
-  if (!value) {
-    return "";
-  }
-
-  return `${sessionName}=${value}`;
 }
 
 export function jsonHeaders(cookie) {

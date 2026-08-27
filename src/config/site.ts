@@ -16,8 +16,8 @@ export const siteConfig = {
     email: "rihdus3110@gmail.com",
   },
   links: {
-    register: "/register",
-    login: "/login",
+    register: "/sign-up",
+    login: "/sign-in",
     dashboard: "/dashboard",
     chat: "/chat",
   },

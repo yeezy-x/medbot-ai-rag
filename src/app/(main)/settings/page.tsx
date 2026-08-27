@@ -3,7 +3,6 @@ import { ArrowLeft } from "lucide-react";
 
 import { requireUser } from "@/lib/auth-utils";
 import { SettingsForm } from "@/components/settings-form";
-import { hasGoogleAuth } from "@/config/env";
 
 export default async function SettingsPage() {
   await requireUser();
@@ -22,12 +21,12 @@ export default async function SettingsPage() {
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
           <p className="text-[0.875rem] text-muted-foreground">
-            Account security is synced to your profile. Appearance and retrieval
+            Account security is managed by Clerk. Appearance and retrieval
             preferences stay in this browser.
           </p>
         </div>
 
-        <SettingsForm googleAuthEnabled={hasGoogleAuth} />
+        <SettingsForm />
       </div>
     </div>
   );

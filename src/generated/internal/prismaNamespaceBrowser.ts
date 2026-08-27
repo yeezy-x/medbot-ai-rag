@@ -57,13 +57,6 @@ export const ModelName = {
   Citation: 'Citation',
   Document: 'Document',
   Chunk: 'Chunk',
-  Account: 'Account',
-  Session: 'Session',
-  VerificationToken: 'VerificationToken',
-  AuthSession: 'AuthSession',
-  AuthToken: 'AuthToken',
-  RecoveryCode: 'RecoveryCode',
-  TrustedDevice: 'TrustedDevice',
   AuditLog: 'AuditLog'
 } as const
 
@@ -85,19 +78,13 @@ export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof
 
 export const UserScalarFieldEnum = {
   id: 'id',
+  clerkId: 'clerkId',
   name: 'name',
   email: 'email',
   emailVerified: 'emailVerified',
   image: 'image',
-  passwordHash: 'passwordHash',
-  passwordChangedAt: 'passwordChangedAt',
   role: 'role',
   status: 'status',
-  mfaEnabled: 'mfaEnabled',
-  mfaSecretEnc: 'mfaSecretEnc',
-  failedLoginCount: 'failedLoginCount',
-  lockedUntil: 'lockedUntil',
-  tokenVersion: 'tokenVersion',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -172,100 +159,6 @@ export const ChunkScalarFieldEnum = {
 } as const
 
 export type ChunkScalarFieldEnum = (typeof ChunkScalarFieldEnum)[keyof typeof ChunkScalarFieldEnum]
-
-
-export const AccountScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  type: 'type',
-  provider: 'provider',
-  providerAccountId: 'providerAccountId',
-  refresh_token: 'refresh_token',
-  access_token: 'access_token',
-  expires_at: 'expires_at',
-  token_type: 'token_type',
-  scope: 'scope',
-  id_token: 'id_token',
-  session_state: 'session_state'
-} as const
-
-export type AccountScalarFieldEnum = (typeof AccountScalarFieldEnum)[keyof typeof AccountScalarFieldEnum]
-
-
-export const SessionScalarFieldEnum = {
-  id: 'id',
-  sessionToken: 'sessionToken',
-  userId: 'userId',
-  expires: 'expires'
-} as const
-
-export type SessionScalarFieldEnum = (typeof SessionScalarFieldEnum)[keyof typeof SessionScalarFieldEnum]
-
-
-export const VerificationTokenScalarFieldEnum = {
-  identifier: 'identifier',
-  token: 'token',
-  expires: 'expires'
-} as const
-
-export type VerificationTokenScalarFieldEnum = (typeof VerificationTokenScalarFieldEnum)[keyof typeof VerificationTokenScalarFieldEnum]
-
-
-export const AuthSessionScalarFieldEnum = {
-  id: 'id',
-  jti: 'jti',
-  userId: 'userId',
-  sessionTokenHash: 'sessionTokenHash',
-  userAgent: 'userAgent',
-  ipAddress: 'ipAddress',
-  deviceLabel: 'deviceLabel',
-  location: 'location',
-  createdAt: 'createdAt',
-  lastActiveAt: 'lastActiveAt',
-  expiresAt: 'expiresAt',
-  revokedAt: 'revokedAt'
-} as const
-
-export type AuthSessionScalarFieldEnum = (typeof AuthSessionScalarFieldEnum)[keyof typeof AuthSessionScalarFieldEnum]
-
-
-export const AuthTokenScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  type: 'type',
-  identifier: 'identifier',
-  tokenHash: 'tokenHash',
-  expiresAt: 'expiresAt',
-  consumedAt: 'consumedAt',
-  meta: 'meta',
-  createdAt: 'createdAt'
-} as const
-
-export type AuthTokenScalarFieldEnum = (typeof AuthTokenScalarFieldEnum)[keyof typeof AuthTokenScalarFieldEnum]
-
-
-export const RecoveryCodeScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  codeHash: 'codeHash',
-  usedAt: 'usedAt',
-  createdAt: 'createdAt'
-} as const
-
-export type RecoveryCodeScalarFieldEnum = (typeof RecoveryCodeScalarFieldEnum)[keyof typeof RecoveryCodeScalarFieldEnum]
-
-
-export const TrustedDeviceScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  tokenHash: 'tokenHash',
-  userAgent: 'userAgent',
-  expiresAt: 'expiresAt',
-  createdAt: 'createdAt',
-  lastUsedAt: 'lastUsedAt'
-} as const
-
-export type TrustedDeviceScalarFieldEnum = (typeof TrustedDeviceScalarFieldEnum)[keyof typeof TrustedDeviceScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {

@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { QueryProvider } from "./providers";
 import { ThemedToaster } from "@/components/themed-toaster";
+import { ClerkProvider } from "@clerk/nextjs";
+import { shadcn } from "@clerk/ui/themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +39,8 @@ export default async function RootLayout({
             resulting className mismatch is intentionally covered by
             suppressHydrationWarning on <html> above. Defaults preserved
             (dark, medium font) when nothing is stored or JS is disabled. */}
-        <script suppressHydrationWarning
+        <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{
             __html: `(function(){try{
               var root=document.documentElement;
@@ -51,10 +54,12 @@ export default async function RootLayout({
         />
       </head>
       <body className="min-h-dvh bg-background text-foreground">
-        <QueryProvider>
-          {children}
-          <ThemedToaster />
-        </QueryProvider>
+        <ClerkProvider appearance={{ theme: shadcn }}>
+          <QueryProvider>
+            {children}
+            <ThemedToaster />
+          </QueryProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

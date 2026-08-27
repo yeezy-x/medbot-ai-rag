@@ -1,41 +1,38 @@
 import { z } from "zod";
 
 const envSchema = z.object({
-  AUTH_SECRET: z.string().min(1, "AUTH_SECRET is required"),
-  AUTH_MFA_ENCRYPTION_KEY: z.string().optional(),
-  NEXTAUTH_URL: z.string().url().optional(),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+  CLERK_SECRET_KEY: z.string().min(1),
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string().default("/sign-in"),
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().default("/sign-up"),
+  CLERK_WEBHOOK_SIGNING_SECRET: z.string().optional(),
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
   OLLAMA_BASE_URL: z.string().url().optional(),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
-  AUTH_GOOGLE_ID: z.string().optional(),
-  AUTH_GOOGLE_SECRET: z.string().optional(),
-  AUTH_RESEND_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().optional(),
+  NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 });
 
 export const env = envSchema.parse({
-  AUTH_SECRET: process.env.AUTH_SECRET,
-  AUTH_MFA_ENCRYPTION_KEY: process.env.AUTH_MFA_ENCRYPTION_KEY,
-  NEXTAUTH_URL: process.env.NEXTAUTH_URL,
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
+  CLERK_WEBHOOK_SIGNING_SECRET: process.env.CLERK_WEBHOOK_SIGNING_SECRET,
   DATABASE_URL: process.env.DATABASE_URL,
   OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL,
   NODE_ENV: process.env.NODE_ENV,
-  AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-  AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
-  AUTH_RESEND_KEY: process.env.AUTH_RESEND_KEY,
-  EMAIL_FROM: process.env.EMAIL_FROM,
+  NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
 });
 
-export const hasGoogleAuth = Boolean(
-  env.AUTH_GOOGLE_ID && env.AUTH_GOOGLE_SECRET
-);
-
-export const hasResendAuth = Boolean(env.AUTH_RESEND_KEY && env.EMAIL_FROM);
-
 export function getAppBaseUrl(): string {
-  return (
-    env.NEXTAUTH_URL ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000"
-  ).replace(/\/$/, "");
+  if (env.NEXT_PUBLIC_APP_URL) {
+    return env.NEXT_PUBLIC_APP_URL.replace(/\/$/, "");
+  }
+  const vercel = process.env.VERCEL_URL;
+  if (vercel) {
+    return `https://${vercel.replace(/\/$/, "")}`;
+  }
+  return "http://localhost:3000";
 }

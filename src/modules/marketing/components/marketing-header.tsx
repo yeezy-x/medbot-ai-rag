@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { auth } from "@/lib/auth";
+import { auth } from "@clerk/nextjs/server";
 import { Button } from "@/components/ui/button";
 import { siteConfig } from "@/config/site";
 import { LogoWordmark } from "@/components/marketing/logo-wordmark";
@@ -14,8 +14,8 @@ const NAV = [
 ] as const;
 
 export async function MarketingHeader() {
-  const session = await auth();
-  const signedIn = Boolean(session?.user);
+  const { isAuthenticated } = await auth();
+  const signedIn = Boolean(isAuthenticated);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border-subtle bg-background/80 backdrop-blur-md">

@@ -8,55 +8,15 @@ const baseUrl = (process.env.BASE_URL ?? "http://127.0.0.1:3000").replace(
   /\/$/,
   ""
 );
-const email = process.env.LOAD_TEST_EMAIL ?? "admin@medbot.com";
-const password = process.env.LOAD_TEST_PASSWORD ?? "password123";
 const durationSec = Number(process.env.LOAD_DURATION_SEC ?? 15);
 const concurrency = Number(process.env.LOAD_CONNECTIONS ?? 5);
 
-function parseSetCookie(headers: Headers): string[] {
-  const raw = headers.getSetCookie?.() ?? [];
-  if (raw.length > 0) return raw;
-  const single = headers.get("set-cookie");
-  return single ? [single] : [];
-}
-
-function cookieHeaderFromResponses(responses: Response[]): string {
-  const pairs: string[] = [];
-  for (const res of responses) {
-    for (const line of parseSetCookie(res.headers)) {
-      const part = line.split(";")[0]?.trim();
-      if (part) pairs.push(part);
-    }
-  }
-  return pairs.join("; ");
-}
-
-async function login(): Promise<string> {
-  const csrfRes = await fetch(`${baseUrl}/api/auth/csrf`);
-  const { csrfToken } = (await csrfRes.json()) as { csrfToken: string };
-  const body = new URLSearchParams({
-    csrfToken,
-    email,
-    password,
-    redirect: "false",
-    callbackUrl: `${baseUrl}/dashboard`,
-    json: "true",
-  });
-  const loginRes = await fetch(
-    `${baseUrl}/api/auth/callback/credentials`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Cookie: cookieHeaderFromResponses([csrfRes]),
-      },
-      body,
-      redirect: "manual",
-    }
-  );
-  const cookie = cookieHeaderFromResponses([csrfRes, loginRes]);
-  if (!cookie.includes("session-token")) {
-    throw new Error(`Login failed (${loginRes.status})`);
+function sessionCookie(): string {
+  const cookie = process.env.CLERK_SESSION_COOKIE;
+  if (!cookie) {
+    throw new Error(
+      "Set CLERK_SESSION_COOKIE to a signed-in Clerk session cookie header."
+    );
   }
   return cookie;
 }
@@ -82,7 +42,7 @@ async function main(): Promise<void> {
   console.log("\n========== CHAT API LOAD (fetch) ==========\n");
   console.log({ baseUrl, durationSec, concurrency });
 
-  const cookie = await login();
+  const cookie = sessionCookie();
   const samples: number[] = [];
   const end = Date.now() + durationSec * 1000;
 

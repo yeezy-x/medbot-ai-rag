@@ -24,7 +24,9 @@ export function setup() {
   const cookie = loginSessionCookie(baseUrl, email, password);
   if (!cookie) {
     throw new Error(
-      "Login failed — seed a user (npm run seed) or set LOAD_TEST_EMAIL / LOAD_TEST_PASSWORD"
+    throw new Error(
+      "Login failed — set CLERK_SESSION_COOKIE to a signed-in Clerk cookie string"
+    );
     );
   }
   return { cookie };

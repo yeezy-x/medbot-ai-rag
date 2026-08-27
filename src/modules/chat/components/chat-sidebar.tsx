@@ -14,7 +14,7 @@ import {
   Sparkles,
   MessageSquareText,
 } from "lucide-react";
-import { signOut } from "next-auth/react";
+import { useClerk } from "@clerk/nextjs";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -98,6 +98,7 @@ export function SidebarContent({
   const [isPending, startTransition] = useTransition();
   const [creating, setCreating] = useState(false);
   const [devMode, setDevMode] = useDevMode();
+  const { signOut } = useClerk();
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -277,7 +278,7 @@ export function SidebarContent({
             </DropdownMenuCheckboxItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem
-              onClick={() => signOut({ callbackUrl: "/" })}
+              onClick={() => void signOut({ redirectUrl: "/" })}
               className="text-destructive focus:text-destructive"
               data-testid="sidebar-logout-button"
             >

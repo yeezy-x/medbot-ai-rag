@@ -38,16 +38,6 @@ export const AccountStatus = {
 export type AccountStatus = (typeof AccountStatus)[keyof typeof AccountStatus]
 
 
-export const AuthTokenType = {
-  EMAIL_VERIFY: 'EMAIL_VERIFY',
-  PASSWORD_RESET: 'PASSWORD_RESET',
-  EMAIL_CHANGE: 'EMAIL_CHANGE',
-  MFA_SETUP: 'MFA_SETUP'
-} as const
-
-export type AuthTokenType = (typeof AuthTokenType)[keyof typeof AuthTokenType]
-
-
 export const AuditAction = {
   LOGIN_SUCCESS: 'LOGIN_SUCCESS',
   LOGIN_FAILURE: 'LOGIN_FAILURE',

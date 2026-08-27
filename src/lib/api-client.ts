@@ -2,14 +2,8 @@ export async function apiClient<T>(
   input: RequestInfo,
   init?: RequestInit
 ) {
-  const response =
-    await fetch(
-      input,
-      init
-    );
-
+  const response = await fetch(input,init);
   let data;
-
   try {
     data = await response.json();
   } catch {

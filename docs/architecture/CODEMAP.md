@@ -51,17 +51,17 @@ Rule of thumb:
 | Path | Role |
 | --- | --- |
 | [`app/(marketing)`](../../src/app/(marketing)/) | Landing page routes |
-| [`app/(auth)`](../../src/app/(auth)/) | Login, register, MFA, forgot/reset |
+| [`app/(clerk)`](../../src/app/(clerk)/) | Clerk sign-in / sign-up |
 | [`app/(main)`](../../src/app/(main)/) | Dashboard, chat, settings (authenticated product UI) |
 | [`app/api`](../../src/app/api/) | HTTP API entrypoints (thin handlers) |
 | [`app/providers.tsx`](../../src/app/providers.tsx) | React Query provider |
 | [`modules/`](../../src/modules/) | **Feature modules** — primary place to change product behavior |
 | [`components/`](../../src/components/) | Shared UI (`ui/`, markdown, marketing atoms, navbar) |
-| [`lib/`](../../src/lib/) | Helpers, envelopes, validation, **`lib/auth.ts`** (NextAuth) |
+| [`lib/`](../../src/lib/) | Helpers, envelopes, validation, **`lib/auth-utils.ts`** (Clerk) |
 | [`db/`](../../src/db/) | Prisma singleton (`@/db`) |
 | [`core/`](../../src/core/) | `BaseRepository` / `BaseService` |
 | [`config/`](../../src/config/) | Env (`env.ts`) and site metadata |
-| [`types/`](../../src/types/) | Shared TS types (auth, API, NextAuth augmentation) |
+| [`types/`](../../src/types/) | Shared TS types (auth roles, API) |
 | [`hooks/`](../../src/hooks/) | Shared React hooks (theme, font size, chat shortcuts, …) |
 | [`constants/`](../../src/constants/) | Shared constants |
 | [`middlewares/`](../../src/middlewares/) | Request helpers (e.g. request id) — not Next middleware |
@@ -87,8 +87,7 @@ modules/<feature>/
 
 | Module | Owns |
 | --- | --- |
-| [`auth`](../../src/modules/auth/) | Login/register/MFA/password-reset/sessions/account UI + auth services |
-| [`email`](../../src/modules/email/) | Provider-agnostic transactional email (Resend / console) |
+| [`auth`](../../src/modules/auth/) | RBAC permission map only (Clerk owns sign-in) |
 | [`chat`](../../src/modules/chat/) | Chat shell, messages, streaming client, chat/message services & repos |
 | [`knowledge`](../../src/modules/knowledge/) | Ingestion, chunking, embeddings, retrieval, RAG orchestration |
 | [`rag`](../../src/modules/rag/) | Prompt constants / RAG prompt text |
@@ -102,23 +101,19 @@ modules/<feature>/
 ## Flow 1 — Login
 
 ```text
-Browser  →  /login
-         →  src/app/(auth)/login/page.tsx
-         →  src/modules/auth/components/login-card.tsx (+ login-form)
-         →  NextAuth signIn("credentials")
-         →  src/lib/auth.ts  (thin wiring)
-         →  modules/auth/providers/credentials.provider.ts
-         →  modules/auth/services/auth.service.ts (+ AuthSession jti)
-         →  user / auth-session repos → Prisma
+Browser  →  /sign-in
+         →  src/app/(clerk)/sign-in/[[...sign-in]]/page.tsx
+         →  Clerk <SignIn />
+         →  requireUser / requireApiUser
+         →  ClerkUserService upserts Prisma User by clerkId
 ```
 
 Related:
 
 - Full auth architecture: [`auth.md`](./auth.md)
-- Gate for protected pages/APIs: [`src/proxy.ts`](../../src/proxy.ts)
+- Gate for protected pages: [`src/proxy.ts`](../../src/proxy.ts)
 - Session helpers: [`src/lib/auth-utils.ts`](../../src/lib/auth-utils.ts), [`src/lib/current-user.ts`](../../src/lib/current-user.ts)
-- Auth HTTP handlers: [`src/app/api/auth/`](../../src/app/api/auth/)
-- Email module: [`src/modules/email/`](../../src/modules/email/)
+- Clerk webhook: [`src/app/api/webhooks/clerk/route.ts`](../../src/app/api/webhooks/clerk/route.ts)
 
 ---
 
@@ -169,8 +164,8 @@ Key files:
 
 | Want to change… | Look here |
 | --- | --- |
-| Login / register / MFA UI | `src/modules/auth/components/` |
-| Auth providers / JWT callbacks | `src/lib/auth.ts` |
+| Login / register UI | `src/app/(clerk)/`, Clerk Dashboard |
+| Auth session helpers | `src/lib/auth-utils.ts`, `src/modules/user/services/clerk-user.service.ts` |
 | Which routes require login | `src/proxy.ts` |
 | Chat layout, citations, sidebar | `src/modules/chat/components/` |
 | Ask/stream API contract | `src/app/api/chats/`, `modules/chat/schemas/` |

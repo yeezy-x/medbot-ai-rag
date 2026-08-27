@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { Sparkles } from "lucide-react";
-import { auth } from "@/lib/auth";
-import { LogoutButton } from "@/modules/auth/components/logout-button";
+import { auth } from "@clerk/nextjs/server";
+import { UserButton } from "@clerk/nextjs";
 
 export async function Navbar() {
-  const session = await auth();
-  const home = session?.user ? "/dashboard" : "/";
+  const { isAuthenticated } = await auth();
+  const home = isAuthenticated ? "/dashboard" : "/";
 
   return (
     <nav className="sticky top-0 z-40 border-b border-border-subtle bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
@@ -27,7 +27,7 @@ export async function Navbar() {
         </Link>
 
         <div className="flex items-center gap-2 text-[0.85rem]">
-          {session?.user ? (
+          {isAuthenticated ? (
             <>
               <Link
                 href="/dashboard"
@@ -41,19 +41,19 @@ export async function Navbar() {
               >
                 Chat
               </Link>
-              <LogoutButton />
+              <UserButton />
             </>
           ) : (
             <>
               <Link
-                href="/login"
+                href="/sign-in"
                 className="rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                 data-testid="navbar-login-link"
               >
                 Sign in
               </Link>
               <Link
-                href="/register"
+                href="/sign-up"
                 className="rounded-md bg-primary px-3 py-1.5 font-medium text-primary-foreground transition-colors hover:brightness-95"
                 data-testid="navbar-register-link"
               >

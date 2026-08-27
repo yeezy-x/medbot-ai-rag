@@ -28,13 +28,6 @@ enum AccountStatus {
   PENDING_DELETION
 }
 
-enum AuthTokenType {
-  EMAIL_VERIFY
-  PASSWORD_RESET
-  EMAIL_CHANGE
-  MFA_SETUP
-}
-
 enum AuditAction {
   LOGIN_SUCCESS
   LOGIN_FAILURE
@@ -65,31 +58,19 @@ enum AuditAction {
 }
 
 model User {
-  id                String         @id @default(uuid())
-  name              String
-  email             String         @unique
-  emailVerified     DateTime?
-  image             String?
-  passwordHash      String?
-  passwordChangedAt DateTime?
-  role              Role           @default(USER)
-  status            AccountStatus  @default(ACTIVE)
-  mfaEnabled        Boolean        @default(false)
-  mfaSecretEnc      String?
-  failedLoginCount  Int            @default(0)
-  lockedUntil       DateTime?
-  tokenVersion      Int            @default(0)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  id            String        @id @default(uuid())
+  clerkId       String        @unique
+  name          String
+  email         String        @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role          @default(USER)
+  status        AccountStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
-  accounts        Account[]
-  sessions        ChatSession[]
-  adapterSessions Session[]
-  authSessions    AuthSession[]
-  recoveryCodes   RecoveryCode[]
-  authTokens      AuthToken[]
-  auditLogs       AuditLog[]
-  trustedDevices  TrustedDevice[]
+  sessions  ChatSession[]
+  auditLogs AuditLog[]
 }
 
 model ChatSession {
@@ -165,100 +146,6 @@ model Chunk {
   @@index([documentId])
   @@index([chunkIndex])
   @@index([pageNumber])
-}
-
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-/// Auth.js adapter session table (unused for JWT strategy; kept for adapter compatibility)
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-/// Application session registry (jti-based JWT revocation + device tracking)
-model AuthSession {
-  id               String    @id @default(cuid())
-  jti              String    @unique
-  userId           String
-  sessionTokenHash String?
-  userAgent        String?
-  ipAddress        String?
-  deviceLabel      String?
-  location         String?
-  createdAt        DateTime  @default(now())
-  lastActiveAt     DateTime  @default(now())
-  expiresAt        DateTime
-  revokedAt        DateTime?
-  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, revokedAt])
-}
-
-model AuthToken {
-  id         String        @id @default(cuid())
-  userId     String?
-  type       AuthTokenType
-  identifier String
-  tokenHash  String
-  expiresAt  DateTime
-  consumedAt DateTime?
-  meta       Json?
-  createdAt  DateTime      @default(now())
-  user       User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([type, identifier, tokenHash])
-  @@index([identifier, type])
-}
-
-model RecoveryCode {
-  id        String    @id @default(cuid())
-  userId    String
-  codeHash  String
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model TrustedDevice {
-  id         String   @id @default(cuid())
-  userId     String
-  tokenHash  String   @unique
-  userAgent  String?
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  lastUsedAt DateTime @default(now())
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
 }
 
 model AuditLog {

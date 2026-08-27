@@ -1,56 +1,48 @@
 # Authentication architecture
 
-MedBot uses **Auth.js v5 (NextAuth)** with a JWT session strategy plus an application-level **AuthSession registry** (`jti`) for multi-device session management and revocation.
+MedBot uses **Clerk** for sign-in, sign-up, sessions, MFA, and account security. A local Prisma `User` row is synced on first authenticated request (and via the Clerk webhook) so chats stay keyed to an app-owned UUID.
 
 ## Mental model
 
 ```text
-Browser → (auth) pages / Server Actions / signIn
-       → lib/auth.ts (thin Auth.js wiring)
-       → modules/auth/services/*
-       → repositories → Prisma → Postgres
-
-proxy.ts + requireUser / requireApiUser → JWT + jti + MFA / trusted device
+Browser → Clerk hosted UI (/sign-in, /sign-up)
+       → Clerk session cookie
+       → proxy.ts clerkMiddleware (page gate)
+       → requireUser / requireApiUser
+       → ClerkUserService (upsert Prisma User by clerkId)
+       → ChatService uses Prisma user.id
 ```
 
-Business logic lives in `src/modules/auth/services/`. Route handlers and pages stay thin.
+RBAC (`USER` / `DOCTOR` / `RESEARCHER` / `ADMIN`) lives on the local `User.role` column, not in Clerk organizations.
 
 ## Features
 
 | Area | Implementation |
 | --- | --- |
-| Password | Argon2id (lazy bcrypt → Argon2 rehash on login) |
-| Email verify / reset | `AuthToken` hashed tokens + `EmailService` (Resend or console) |
-| Google OAuth | Explicit link on verified Google email; set password later |
-| MFA | TOTP + recovery codes + trusted device cookie + step-up window |
-| Sessions | `AuthSession` rows; list / revoke one / revoke others; `tokenVersion` logout-all |
-| RBAC | Roles `USER`, `DOCTOR`, `RESEARCHER`, `ADMIN` + permission map |
-| Audit | `AuditLog` for security events |
-| Account | Profile, password, email change, export, deactivate, delete |
+| Passwords / social / MFA | Clerk Dashboard + `<SignIn />` / `<SignUp />` / `<UserProfile />` |
+| Sessions | Clerk; sign-out via `useClerk().signOut` / `<UserButton />` |
+| Local profile | `User.clerkId` unique mapping |
+| RBAC | Prisma `role` + `src/modules/auth/constants/permissions.ts` |
+| User delete | Clerk `user.deleted` webhook removes the local row (cascades chats) |
 
 ## Env
 
-See [`.env.example`](../../.env.example):
-
-- `AUTH_SECRET` — cookie / JWT signing
-- `AUTH_MFA_ENCRYPTION_KEY` — MFA secret encryption (falls back to `AUTH_SECRET` in dev)
-- `AUTH_GOOGLE_*`, `AUTH_RESEND_KEY`, `EMAIL_FROM`
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
+- `CLERK_SECRET_KEY`
+- `NEXT_PUBLIC_CLERK_SIGN_IN_URL` (`/sign-in`)
+- `NEXT_PUBLIC_CLERK_SIGN_UP_URL` (`/sign-up`)
+- `CLERK_WEBHOOK_SIGNING_SECRET` (optional locally; required for `/api/webhooks/clerk`)
 
 ## Stable contracts (do not break)
 
 - `requireUser`, `requireApiUser`, `requireAdmin`, `requireApiAdmin` in `src/lib/auth-utils.ts`
-- Session user fields: `id`, `email`, `name`, `role`, `mfaVerified` (plus optional `jti`, `tokenVersion`, `authTime`)
-- Chat APIs continue to call `requireApiUser` only
+- Session user fields: `id` (Prisma), `clerkId`, `email`, `name`, `role`, `image`
+- Chat APIs continue to call `requireApiUser` only and use Prisma `user.id`
 
-## Secret rotation
+## Promoting an admin
 
-1. Rotate `AUTH_SECRET` → all sessions invalidate (users re-login).
-2. Rotate `AUTH_MFA_ENCRYPTION_KEY` → existing MFA secrets cannot decrypt; users must reset MFA (store previous key briefly if migrating).
+Sign in once so the local row exists, then:
 
-## Threat notes
-
-- Tokens stored hashed (SHA-256); recovery codes hashed
-- Generic login / forgot-password responses where appropriate
-- Account lockout after repeated failures
-- In-process rate limits (pair with edge/WAF in production multi-instance)
-- Step-up required for MFA disable / recovery regenerate
+```bash
+ADMIN_EMAIL=you@example.com npm run seed
+```

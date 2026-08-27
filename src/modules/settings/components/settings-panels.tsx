@@ -6,16 +6,10 @@ import { FontSizeToggle } from "./font-size-toggle";
 import { DevModeToggle } from "./dev-mode-toggle";
 import { ModelPicker } from "./model-picker";
 import { TopKSlider, SimilaritySlider } from "./retrieval-sliders";
-import { MfaSettingsPanel } from "./mfa-settings-panel";
 import { AccountRoleBadge } from "./account-role-badge";
-import { SessionsPanel } from "./sessions-panel";
-import { AccountSecurityPanel } from "./account-security-panel";
+import { UserProfile } from "@clerk/nextjs";
 
-export function SettingsPanels({
-  googleAuthEnabled = false,
-}: {
-  googleAuthEnabled?: boolean;
-}) {
+export function SettingsPanels() {
   return (
     <div className="mt-8 space-y-4">
       <Card>
@@ -24,23 +18,26 @@ export function SettingsPanels({
         </CardHeader>
         <CardContent className="space-y-5 px-4">
           <AccountRoleBadge />
-          <AccountSecurityPanel googleAuthEnabled={googleAuthEnabled} />
+          <p className="text-sm text-muted-foreground">
+            Email, password, MFA, and connected accounts are managed by Clerk.
+          </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-[0.95rem]">Security</CardTitle>
+          <CardTitle className="text-[0.95rem]">Clerk profile</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6 px-4">
-          <div>
-            <p className="mb-2 text-sm font-medium">Two-factor authentication</p>
-            <MfaSettingsPanel />
-          </div>
-          <div>
-            <p className="mb-2 text-sm font-medium">Active sessions</p>
-            <SessionsPanel />
-          </div>
+        <CardContent className="overflow-x-auto px-2">
+          <UserProfile
+            routing="hash"
+            appearance={{
+              elements: {
+                rootBox: "mx-auto w-full",
+                cardBox: "shadow-none border-0 w-full",
+              },
+            }}
+          />
         </CardContent>
       </Card>
 

@@ -2,37 +2,33 @@ import "dotenv/config";
 import { Pool } from "pg";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/client";
-import * as argon2 from "argon2";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const passwordHash = await argon2.hash("password123", {
-    type: argon2.argon2id,
-    memoryCost: 19456,
-    timeCost: 2,
-    parallelism: 1,
+  const email = process.env.ADMIN_EMAIL;
+  if (!email) {
+    console.log(
+      "No ADMIN_EMAIL set. Sign up with Clerk, then re-run seed with ADMIN_EMAIL=you@example.com to promote that user."
+    );
+    return;
+  }
+
+  const result = await prisma.user.updateMany({
+    where: { email },
+    data: { role: "ADMIN", status: "ACTIVE" },
   });
 
-  await prisma.user.upsert({
-    where: { email: "admin@medbot.com" },
-    update: {
-      role: "ADMIN",
-      passwordHash,
-      status: "ACTIVE",
-      emailVerified: new Date(),
-    },
-    create: {
-      name: "Admin User",
-      email: "admin@medbot.com",
-      passwordHash,
-      role: "ADMIN",
-      status: "ACTIVE",
-      emailVerified: new Date(),
-    },
-  });
+  if (result.count === 0) {
+    console.log(
+      `No local user found for ${email}. Sign in once so Clerk can sync the row, then seed again.`
+    );
+    return;
+  }
+
+  console.log(`Promoted ${email} to ADMIN.`);
 }
 
 main()

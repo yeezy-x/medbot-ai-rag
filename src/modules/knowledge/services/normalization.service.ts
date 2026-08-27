@@ -4,28 +4,17 @@ import { NormalizationResult } from "../types/normalization.types";
 export class NormalizationService {
   normalize(rawText: string): NormalizationResult {
     let text = rawText;
-
     const originalLength = text.length;
-
     text = this.normalizeLineEndings(text);
-
-    const whitespaceResult =
-      this.normalizeWhitespace(text);
-
+    const whitespaceResult = this.normalizeWhitespace(text);
     text = whitespaceResult.text;
-
-    const blankLineResult =
-      this.collapseBlankLines(text);
-
+    const blankLineResult = this.collapseBlankLines(text);
     text = blankLineResult.text;
-
     text = this.trim(text);
-
     return {
       text,
 
-      removedCharacters:
-        originalLength - text.length,
+      removedCharacters:originalLength - text.length,
 
       normalizedSpaces:
         whitespaceResult.normalizedSpaces,

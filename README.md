@@ -33,13 +33,13 @@ The result is answers you can audit: every factual claim can be traced back to a
 
 ### Product surface
 - Marketing landing page (hero, how it works, stack)
-- Email/password auth (Auth.js v5) with Argon2id, MFA, sessions, Google OAuth
+- Email/password and social auth via **Clerk** (MFA and sessions in the Clerk Dashboard)
 - Dashboard with recent chats
 - Chat sidebar with search, date grouping, rename / delete
 - Command palette (`⌘K`)
 - Markdown + GFM rendering with syntax-highlighted code blocks
 - Per-message actions (copy, regenerate, export)
-- Settings (account security, MFA, sessions, theme, retrieval) — security synced to server; UI prefs local
+- Settings (Clerk account profile, theme, retrieval) — security in Clerk; UI prefs local
 - Dark-first UI with a single teal accent
 
 ### Knowledge pipeline
@@ -57,7 +57,7 @@ The result is answers you can audit: every factual claim can be traced back to a
 | --- | --- |
 | Framework | [Next.js 16](https://nextjs.org/) (App Router) + React 19 + TypeScript |
 | UI | Tailwind CSS v4, shadcn/ui (Radix), Lucide |
-| Auth | [NextAuth.js v5](https://authjs.dev/) + Argon2id, MFA, session registry, RBAC |
+| Auth | [Clerk](https://clerk.com/) + local Prisma `User` (`clerkId`) and RBAC |
 | Data | [Prisma 7](https://www.prisma.io/) + PostgreSQL + [pgvector](https://github.com/pgvector/pgvector) |
 | LLM / embeddings | [Ollama](https://ollama.com/) — `qwen2.5-coder:3b` (chat), `nomic-embed-text` (embed) |
 | Client data | TanStack Query |
@@ -114,17 +114,14 @@ The system prompt instructs the model to answer medical facts **only** from supp
 
 | Model | Role |
 | --- | --- |
-| `User` | Account (Argon2id hash, roles, MFA, lockout, status) |
-| `AuthSession` | Multi-device JWT session registry (`jti`) |
-| `AuthToken` | Email verify / password reset / email change tokens |
-| `RecoveryCode` / `TrustedDevice` / `AuditLog` | MFA recovery, remember-device, security audit |
+| `User` | Account mapped to Clerk (`clerkId`), roles, status |
 | `ChatSession` | Owned conversation thread |
 | `Message` | `USER` / `ASSISTANT` / `SYSTEM` turns |
 | `Citation` | Links an assistant message to a chunk (page + source title) |
 | `Document` | Ingested PDF metadata + checksum + ingestion status |
 | `Chunk` | Text unit + optional page/chapter/section + `vector(768)` embedding |
 
-Auth adapter tables (`Account`, `Session`, `VerificationToken`) support Auth.js. See [docs/architecture/auth.md](docs/architecture/auth.md).
+Auth is Clerk. Local `User` rows are created on first sign-in. See [docs/architecture/auth.md](docs/architecture/auth.md).
 
 ---
 
@@ -159,13 +156,13 @@ medbot/
 └── src/
     ├── app/
     │   ├── (marketing)/     # Landing
-    │   ├── (auth)/          # Login, register, MFA, reset
+    │   ├── (clerk)/             # Sign-in / sign-up (Clerk)
     │   ├── (main)/          # Dashboard, chat, settings
     │   ├── api/             # Thin HTTP handlers
     │   └── providers.tsx
     ├── modules/             # Feature modules (auth, chat, knowledge, …)
     ├── components/          # Shared UI (shadcn, markdown, navbar)
-    ├── lib/                 # Helpers + auth.ts (NextAuth)
+    ├── lib/                 # Helpers + auth-utils (Clerk → Prisma user)
     ├── db/                  # Prisma singleton
     ├── core/                # BaseRepository / BaseService
     ├── config/              # env, site
@@ -204,37 +201,32 @@ Create a `.env` in the project root (see `src/config/env.ts`):
 | Variable | Required | Description |
 | --- | --- | --- |
 | `DATABASE_URL` | Yes | PostgreSQL connection string (with pgvector) |
-| `AUTH_SECRET` | Yes | Secret for NextAuth session encryption |
-| `NEXTAUTH_URL` | Optional | App URL (e.g. `http://localhost:3000`) |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Yes | Clerk publishable key |
+| `CLERK_SECRET_KEY` | Yes | Clerk secret key |
+| `NEXT_PUBLIC_CLERK_SIGN_IN_URL` | Optional | Defaults to `/sign-in` |
+| `NEXT_PUBLIC_CLERK_SIGN_UP_URL` | Optional | Defaults to `/sign-up` |
+| `CLERK_WEBHOOK_SIGNING_SECRET` | Optional | Svix secret for `/api/webhooks/clerk` |
 | `OLLAMA_BASE_URL` | Optional | Defaults to `http://localhost:11434` |
 | `NODE_ENV` | Optional | `development` \| `production` \| `test` |
-| `AUTH_GOOGLE_ID` | Optional | Google OAuth client ID |
-| `AUTH_GOOGLE_SECRET` | Optional | Google OAuth client secret |
-| `AUTH_RESEND_KEY` | Optional | Resend API key for magic-link email |
-| `EMAIL_FROM` | Optional | From address for magic links (required with Resend) |
+| `ADMIN_EMAIL` | Optional | Seed promotes this local user to `ADMIN` |
 
 Example:
 
 ```bash
 DATABASE_URL="postgresql://USER:PASSWORD@HOST:5432/medbot?sslmode=require"
-AUTH_SECRET="generate-a-long-random-string"
-NEXTAUTH_URL="http://localhost:3000"
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_..."
+CLERK_SECRET_KEY="sk_test_..."
+NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in"
+NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up"
 OLLAMA_BASE_URL="http://localhost:11434"
-# AUTH_GOOGLE_ID="..."
-# AUTH_GOOGLE_SECRET="..."
-# AUTH_RESEND_KEY="re_..."
-# EMAIL_FROM="MedBot <onboarding@resend.dev>"
 ```
 
 ### Auth surface
 
-- **Credentials** — email/password via NextAuth (`signIn("credentials")`)
-- **Google OAuth** — when `AUTH_GOOGLE_*` is set
-- **Magic link** — when Resend env vars are set
-- **TOTP MFA** — optional per user under Settings → Account
-- **Roles** — `USER` (default) / `ADMIN` (seeded admin); `GET /api/admin/status` is admin-only
-- **Edge gate** — [`src/proxy.ts`](src/proxy.ts) protects dashboard/chat/settings and chat/document APIs
-- Session cookies are set only by NextAuth (`/api/auth/[...nextAuth]`). There is no separate `/api/auth/login`.
+- **Clerk** — `/sign-in`, `/sign-up` catch-all pages
+- **Roles** — `USER` (default) / `ADMIN` (promote with `ADMIN_EMAIL` seed)
+- **Edge gate** — [`src/proxy.ts`](src/proxy.ts) protects dashboard/chat/settings
+- **Local sync** — first request + webhook upsert `User` by `clerkId`
 
 ---
 
@@ -257,11 +249,8 @@ npx prisma db push
 # 5. Generate Prisma client (if needed)
 npx prisma generate
 
-# 6. Seed a local admin user
-npm run seed
-# → email: admin@medbot.com
-# → password: password123
-# Change this immediately in shared environments.
+# 6. Sign up in the app, then optionally promote an admin
+# ADMIN_EMAIL=you@example.com npm run seed
 
 # 7. Place the encyclopedia PDF
 #    knowledge-base/gale-encyclopedia.pdf
@@ -310,14 +299,13 @@ Additional RAG debug scripts under `scripts/dev/` (embedding consistency, citati
 
 ## API overview
 
-All authenticated routes expect a valid NextAuth session unless noted.
+All authenticated routes expect a valid Clerk session unless noted.
 
 | Method | Path | Description |
 | --- | --- | --- |
 | `GET` | `/api/health` | Health check |
-| `POST` | `/api/auth/register` | Create account |
-| `POST` | `/api/auth/login` | Credentials login helper |
-| `*` | `/api/auth/[...nextAuth]` | NextAuth handlers |
+| `GET` | `/api/auth/me` | Local user profile |
+| `POST` | `/api/webhooks/clerk` | Clerk user sync (Svix) |
 | `GET` / `POST` | `/api/chats` | List / create chat sessions |
 | `GET` / `PATCH` / `DELETE` | `/api/chats/[id]` | Get, rename, or delete a chat |
 | `POST` | `/api/chats/[id]/messages` | Non-streaming send (legacy / fallback) |
@@ -336,7 +324,7 @@ Default retrieval knobs (server-side): `topK = 5`, `minSimilarity ≈ 0.70`, con
 | Route | Description |
 | --- | --- |
 | `/` | Marketing landing |
-| `/login`, `/register` | Auth |
+| `/sign-in`, `/sign-up` | Clerk auth |
 | `/dashboard` | Recent chats + quick start |
 | `/chat` | New chat composer |
 | `/chat/[id]` | Conversation thread |

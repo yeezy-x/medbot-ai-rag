@@ -12,4 +12,3 @@ export class AppError extends Error{
     }
 }
 
-//every custom error must inherit from this code. 
