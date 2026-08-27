@@ -35,7 +35,7 @@ export class IngestionService {
       new MetadataService(),
 
     private readonly embeddingService =
-      new EmbeddingService(createEmbeddingProvider())
+      new EmbeddingService(createEmbeddingProvider()),
 
     private readonly documentRepository =
       new DocumentRepository(),

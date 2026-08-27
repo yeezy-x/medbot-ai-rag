@@ -14,7 +14,7 @@ import { DEFAULT_CANDIDATE_POOL_SIZE, DEFAULT_MIN_SIMILARITY_SCORE } from "../co
 export class RetrievalService {
   constructor(
     private readonly embeddingService =
-      new EmbeddingService(createEmbeddingProvider())
+      new EmbeddingService(createEmbeddingProvider()),
     private readonly vectorService =
       new VectorService()
   ) {}
